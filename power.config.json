@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "appId": "0c51ffc7-8d07-4371-a08a-5459e16a1ccd",
+  "appDisplayName": "Freigabencockpit Next",
+  "region": "prod",
+  "environmentId": "94283d50-c20e-e585-aade-876895af0d0d",
+  "description": "BMW Software Approval Tracking Cockpit",
+  "buildPath": "./dist",
+  "buildEntryPoint": "index.html",
+  "localAppUrl": "http://localhost:3000",
+  "logoPath": "Default",
+  "connectionReferences": {},
+  "databaseReferences": {}
+}

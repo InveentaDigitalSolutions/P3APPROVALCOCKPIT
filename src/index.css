@@ -1,0 +1,185 @@
+/* ============================================================
+   Global Styles – COAP Freigabecockpit
+   BMW Group CI compliant
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import './styles/tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+  background: var(--bmw-off-white);
+  color: var(--bmw-black);
+  line-height: 1.5;
+}
+
+/* App Layout */
+.app-layout {
+  min-height: 100vh;
+  padding-left: var(--sidebar-expanded);
+  transition: padding-left 0.2s ease;
+}
+
+.app-layout--collapsed {
+  padding-left: var(--sidebar-collapsed);
+}
+
+.app-content {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .app-content {
+    padding: var(--space-6) var(--space-4);
+  }
+}
+
+/* Typography resets */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+/* Shared Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--border-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+.btn--primary {
+  background: var(--bmw-blue);
+  color: var(--bmw-white);
+  border-color: var(--bmw-blue);
+}
+
+.btn--primary:hover {
+  background: var(--bmw-blue-hover);
+  border-color: var(--bmw-blue-hover);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--bmw-blue);
+  outline-offset: 2px;
+}
+
+.btn--primary:disabled {
+  background: var(--bmw-silver);
+  border-color: var(--bmw-silver);
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.btn--secondary {
+  background: var(--bmw-white);
+  color: var(--bmw-blue);
+  border-color: var(--bmw-blue);
+}
+
+.btn--secondary:hover {
+  background: var(--bmw-blue-light);
+}
+
+/* Shared Select */
+.select {
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  color: var(--bmw-black);
+  background: var(--bmw-white);
+  border: 1px solid var(--bmw-light-grey);
+  border-radius: var(--border-radius);
+  padding: var(--space-2) var(--space-4);
+  min-width: 160px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236F6F6F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: var(--space-8);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--bmw-blue);
+  box-shadow: 0 0 0 3px rgba(28, 105, 212, 0.15);
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--bmw-blue);
+  outline-offset: 1px;
+}
+
+.select--compact {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+  padding-right: var(--space-6);
+  min-width: 130px;
+}
+
+.select--changed {
+  border-color: var(--bmw-warning);
+  background-color: var(--bmw-warning-light);
+  color: #7A4F0A;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bmw-silver);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bmw-mid-grey);
+}

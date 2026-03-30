@@ -1,0 +1,114 @@
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bmw-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity var(--transition-slow), transform var(--transition-slow);
+}
+
+.loading-screen--done {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-screen__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-5);
+    animation: fadeUp 0.6s ease forwards;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-screen__logo {
+    width: 96px;
+    height: 96px;
+    animation: logoSpin 1.2s ease-out forwards;
+}
+
+@keyframes logoSpin {
+    from {
+        transform: scale(0.6) rotate(-30deg);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.loading-screen__logo svg,
+.loading-screen__logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.loading-screen__title {
+    font-family: var(--font-primary);
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--bmw-white);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.loading-screen__subtitle {
+    font-family: var(--font-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-regular);
+    color: var(--bmw-silver);
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+.loading-screen__bar-wrap {
+    width: 280px;
+    height: 3px;
+    background: var(--bmw-charcoal);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.loading-screen__bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bmw-blue) 0%, var(--bmw-blue-mid) 50%, var(--bmw-blue) 100%);
+    background-size: 200% 100%;
+    border-radius: 2px;
+    transition: width 0.05s linear;
+    width: 0%;
+    animation: barShimmer 1.5s ease infinite;
+}
+
+@keyframes barShimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.loading-screen__pct {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bmw-mid-grey);
+    letter-spacing: 0.05em;
+}

@@ -1,0 +1,709 @@
+.gantt {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.gantt__wrapper {
+    overflow-x: auto;
+    border: var(--border-light);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.gantt__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-primary);
+    font-size: var(--text-sm);
+    min-width: 1400px;
+    table-layout: auto;
+}
+
+/* Header */
+.gantt__header-row {
+    background: var(--bmw-black);
+}
+
+.gantt__th {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: var(--font-semibold);
+    color: var(--bmw-silver);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--bmw-charcoal);
+    position: sticky;
+    top: 0;
+}
+
+.gantt__th--kw {
+    text-align: center;
+    min-width: 160px;
+    border-left: 1px solid var(--bmw-charcoal);
+}
+
+.gantt__th--current {
+    background: rgba(28, 105, 212, 0.18);
+    border-bottom-color: var(--bmw-blue);
+    box-shadow: inset 0 -2px 0 var(--bmw-blue);
+}
+
+.gantt__th--bauphase {
+    min-width: 100px;
+}
+
+.gantt__th--speicher {
+    min-width: 80px;
+}
+
+.gantt__th--penthouse {
+    min-width: 80px;
+}
+
+.gantt__th--wmm {
+    min-width: 80px;
+}
+
+.gantt__th--meilenstein {
+    min-width: 90px;
+}
+
+.gantt__th--zieldatum {
+    min-width: 100px;
+}
+
+.gantt__th--highest {
+    min-width: 110px;
+    text-align: center;
+}
+
+.gantt__td--highest {
+    text-align: center;
+}
+
+.gantt__kw-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.gantt__kw-label {
+    font-size: 0.6rem;
+    color: var(--bmw-mid-grey);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.gantt__kw-num {
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--bmw-white);
+    letter-spacing: 0.03em;
+}
+
+.gantt__th--current .gantt__kw-num {
+    color: var(--bmw-blue-mid);
+}
+
+.gantt__kw-dates {
+    font-size: 0.6rem;
+    font-weight: var(--font-regular);
+    color: var(--bmw-mid-grey);
+    letter-spacing: 0.02em;
+}
+
+/* ── Rows ── */
+.gantt__row {
+    background: var(--bmw-white);
+    transition: background var(--transition-fast);
+}
+
+.gantt__row:hover {
+    background: #F0F4FA;
+}
+
+.gantt__row--alt {
+    background: var(--bmw-off-white);
+}
+
+.gantt__row--alt:hover {
+    background: #EAF0F9;
+}
+
+/* ── SOP top-level group header row ── */
+.gantt__sop-row {
+    background: var(--bmw-black);
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background var(--transition-fast);
+}
+
+.gantt__sop-row:hover {
+    background: #111;
+}
+
+.gantt__sop-label {
+    padding: var(--space-2) var(--space-4);
+}
+
+.gantt__sop-label-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.gantt__sop-badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: var(--font-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1.5px solid;
+    border-radius: 3px;
+    padding: 1px 6px;
+}
+
+.gantt__sop-badge--sop-0 {
+    border-color: var(--bmw-blue);
+    color: var(--bmw-blue);
+}
+
+.gantt__sop-badge--sop-1 {
+    border-color: #0EA5A5;
+    color: #0EA5A5;
+}
+
+.gantt__sop-badge--sop-2 {
+    border-color: #7B61FF;
+    color: #7B61FF;
+}
+
+.gantt__sop-badge--sop-3 {
+    border-color: #D97706;
+    color: #D97706;
+}
+
+.gantt__sop-name {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--bmw-white);
+    letter-spacing: 0.06em;
+}
+
+/* SOP KW cells — I-Stufe bars */
+.gantt__sop-kw {
+    text-align: center;
+    border-left: 1px solid var(--bmw-charcoal);
+    padding: var(--space-2) var(--space-2) !important;
+    vertical-align: middle;
+}
+
+.gantt__istufe-bars {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.gantt__istufe-bar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    padding: 3px 12px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: var(--font-bold);
+    color: var(--bmw-white);
+    letter-spacing: 0.05em;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0.92;
+    transition: opacity var(--transition-fast);
+}
+
+.gantt__istufe-bar--sop-0 {
+    background: var(--bmw-blue);
+}
+
+.gantt__istufe-bar--sop-1 {
+    background: #0EA5A5;
+}
+
+.gantt__istufe-bar--sop-2 {
+    background: #7B61FF;
+}
+
+.gantt__istufe-bar--sop-3 {
+    background: #D97706;
+}
+
+.gantt__istufe-bar:hover {
+    opacity: 1;
+}
+
+/* ── Speichertyp group header row ── */
+.gantt__group-row {
+    background: var(--bmw-charcoal);
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background var(--transition-fast);
+}
+
+.gantt__group-row:hover {
+    background: #2A2A2A;
+}
+
+.gantt__group-label {
+    padding: var(--space-2) var(--space-4);
+    padding-left: calc(var(--space-4) + 20px);
+}
+
+.gantt__group-label-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.gantt__group-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--bmw-silver);
+    transition: transform 0.2s ease;
+    width: 16px;
+    flex-shrink: 0;
+}
+
+.gantt__group-chevron--collapsed {
+    transform: rotate(-90deg);
+}
+
+.gantt__group-name {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--bmw-white);
+    letter-spacing: 0.06em;
+}
+
+.gantt__group-count {
+    font-size: var(--text-xs);
+    font-weight: var(--font-regular);
+    color: var(--bmw-mid-grey);
+    margin-left: var(--space-1);
+}
+
+/* Indented detail cells – level 2 nesting (under SOP + speichertyp) */
+.gantt__td--indented-2 {
+    padding-left: calc(var(--space-4) + 40px);
+}
+
+.gantt__td {
+    padding: var(--space-3) var(--space-4);
+    color: var(--bmw-black);
+    border-bottom: var(--border-light);
+    vertical-align: middle;
+}
+
+.gantt__td--level {
+    text-align: center;
+    border-left: 1px solid var(--bmw-light-grey);
+    vertical-align: top;
+    padding: var(--space-2) var(--space-2);
+}
+
+/* Stack of multiple records in one cell */
+.gantt__cell-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+}
+
+/* Divider between stacked cards */
+.gantt__cell-stack .gantt__cell-card+.gantt__cell-card {
+    margin-top: 5px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--bmw-light-grey);
+}
+
+/* Individual record card within a KW cell */
+.gantt__cell-card {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: var(--bmw-off-white);
+    border: 1px solid var(--bmw-light-grey);
+    position: relative;
+    align-items: center;
+}
+
+/* Primary card (newest record, shown first) */
+.gantt__cell-card--primary {
+    background: #fff;
+    border-color: var(--bmw-light-grey);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+}
+
+/* Secondary card (older records, same visual weight) */
+.gantt__cell-card--secondary {
+    background: var(--bmw-off-white);
+    border-color: var(--bmw-light-grey);
+    padding: 5px 8px;
+    gap: 3px;
+}
+
+.gantt__cell-card--secondary .gantt__cell-badge-hero .freigabe-badge {
+    font-size: 0.7rem;
+    padding: 2px 7px;
+}
+
+.gantt__cell-card--secondary .gantt__cell-tag {
+    font-size: 8px;
+    padding: 0px 4px;
+}
+
+.gantt__cell-card--single {
+    background: #fff;
+    align-items: center;
+}
+
+/* Hero badge — centered, large, dominant */
+.gantt__cell-badge-hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 0;
+}
+
+.gantt__cell-badge-hero .freigabe-badge {
+    font-size: 0.85rem;
+    padding: 4px 14px;
+    min-width: 44px;
+    border-radius: 4px;
+}
+
+/* Tags row: I-Stufe, SW-Stand, Meilenstein — compact footnote */
+.gantt__cell-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-items: center;
+    justify-content: center;
+}
+
+.gantt__cell-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: var(--font-semibold);
+    padding: 1px 5px;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.gantt__cell-tag--istufe {
+    color: #fff;
+    letter-spacing: 0.02em;
+}
+
+.gantt__cell-tag--istufe-green {
+    background: #16a34a;
+}
+
+.gantt__cell-tag--istufe-lime {
+    background: #65a30d;
+}
+
+.gantt__cell-tag--istufe-yellow {
+    background: #ca8a04;
+}
+
+.gantt__cell-tag--istufe-orange {
+    background: #ea580c;
+}
+
+.gantt__cell-tag--istufe-red {
+    background: #dc2626;
+}
+
+.gantt__cell-tag--istufe-unknown {
+    background: var(--bmw-grey-40);
+}
+
+.gantt__cell-tag--sw {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.gantt__cell-tag--ms {
+    background: var(--bmw-blue-light);
+    color: var(--bmw-blue);
+}
+
+.gantt__cell-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.gantt__cell-date {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--bmw-mid-grey);
+    white-space: nowrap;
+}
+
+.gantt__cell-date--center {
+    text-align: center;
+}
+
+.gantt__cell-ref {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    color: var(--bmw-charcoal);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+
+.gantt__td--current {
+    background: rgba(28, 105, 212, 0.06);
+    box-shadow: inset 1px 0 0 rgba(28, 105, 212, 0.12), inset -1px 0 0 rgba(28, 105, 212, 0.12);
+}
+
+.gantt__row:hover .gantt__td--current {
+    background: rgba(28, 105, 212, 0.11);
+}
+
+.gantt__td--clickable {
+    cursor: pointer;
+}
+
+.gantt__td--clickable:hover {
+    background: var(--bmw-blue-light) !important;
+}
+
+.gantt__td--date {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bmw-mid-grey);
+    white-space: nowrap;
+}
+
+.gantt__td--meta {
+    color: var(--bmw-charcoal);
+    white-space: nowrap;
+}
+
+/* Bauphase cell */
+.gantt__td--bauphase {
+    max-width: 200px;
+}
+
+.gantt__bauphase-chip {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--bmw-charcoal);
+    background: var(--bmw-off-white);
+    border: 1px solid var(--bmw-light-grey);
+    border-radius: 3px;
+    padding: 1px 6px;
+    margin-right: 3px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+}
+
+.gantt__bauphase-na {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bmw-mid-grey);
+}
+
+/* Speicher label */
+.gantt__speicher-label {
+    font-weight: var(--font-semibold);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--bmw-black);
+}
+
+/* WMM link */
+.gantt__wmm-link {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--bmw-blue);
+    text-decoration: underline;
+    cursor: pointer;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.gantt__td--wmm {
+    max-width: 90px;
+}
+
+/* I-Stufe color tag in KW cells */
+.gantt__cell-istufe-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: var(--font-semibold);
+    padding: 1px 6px;
+    color: #fff;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+/* Milestone chip */
+.gantt__milestone-chip {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--bmw-blue);
+    background: var(--bmw-blue-light);
+    border: 1px solid rgba(28, 105, 212, 0.25);
+    border-radius: 3px;
+    padding: 2px 7px;
+}
+
+/* Legend */
+.gantt__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    padding: var(--space-3) var(--space-4);
+    background: var(--bmw-off-white);
+    border: var(--border-light);
+    border-radius: var(--border-radius-lg);
+}
+
+.gantt__legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.gantt__legend-label {
+    font-size: var(--text-xs);
+    color: var(--bmw-mid-grey);
+    white-space: nowrap;
+}
+
+/* ── Dual badge row (Soll + Ist) ── */
+.gantt__cell-badge-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 6px;
+    margin: 2px 0;
+}
+
+.gantt__cell-badge-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    position: relative;
+}
+
+.gantt__cell-badge-label {
+    font-size: 8px;
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bmw-mid-grey);
+    line-height: 1;
+}
+
+.gantt__cell-badge-clickable {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 1px;
+    transition: background 0.15s;
+}
+
+.gantt__cell-badge-clickable:hover {
+    background: rgba(28, 105, 212, 0.08);
+}
+
+.gantt__cell-badge-edit-icon {
+    font-size: 8px;
+    color: var(--bmw-mid-grey);
+    line-height: 1;
+}
+
+/* ── Confirm dropdown ── */
+.gantt__confirm-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: var(--bmw-white);
+    border: 1px solid var(--bmw-silver);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+    padding: 4px 0;
+    min-width: 160px;
+    white-space: nowrap;
+}
+
+.gantt__confirm-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: var(--text-xs);
+    font-family: var(--font-primary);
+    color: var(--bmw-charcoal);
+    text-align: left;
+    transition: background 0.1s;
+}
+
+.gantt__confirm-option:hover {
+    background: var(--bmw-off-white);
+}
+
+.gantt__confirm-option--active {
+    background: var(--bmw-blue-light);
+    font-weight: var(--font-semibold);
+}

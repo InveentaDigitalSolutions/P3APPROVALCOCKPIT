@@ -1,0 +1,152 @@
+.stammdaten-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+/* Header */
+.stammdaten-page__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.stammdaten-page__title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--bmw-black);
+    margin: 0 0 var(--space-1);
+    letter-spacing: -0.01em;
+}
+
+.stammdaten-page__subtitle {
+    font-size: var(--text-sm);
+    color: var(--bmw-mid-grey);
+    margin: 0;
+}
+
+.stammdaten-page__subtitle strong {
+    color: var(--bmw-charcoal);
+}
+
+/* Toolbar */
+.stammdaten-page__toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.stammdaten-page__search {
+    flex: 1;
+    min-width: 220px;
+    max-width: 420px;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    font-family: var(--font-primary);
+    border: var(--border-light);
+    border-radius: var(--border-radius);
+    background: var(--bmw-white);
+    color: var(--bmw-black);
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.stammdaten-page__search:focus {
+    border-color: var(--bmw-blue);
+    box-shadow: 0 0 0 3px rgba(28, 105, 212, 0.12);
+}
+
+/* Table wrapper */
+.stammdaten-page__table-wrapper {
+    overflow-x: auto;
+    border: var(--border-light);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.stammdaten-page__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-primary);
+    font-size: var(--text-sm);
+}
+
+.stammdaten-page__table thead {
+    background: var(--bmw-black);
+}
+
+.stammdaten-page__table th {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: var(--font-semibold);
+    color: var(--bmw-silver);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--bmw-charcoal);
+}
+
+.stammdaten-page__th--num {
+    text-align: center !important;
+}
+
+.stammdaten-page__th--actions {
+    text-align: right !important;
+    min-width: 100px;
+}
+
+.stammdaten-page__table tbody tr {
+    background: var(--bmw-white);
+    transition: background var(--transition-fast);
+}
+
+.stammdaten-page__table tbody tr:nth-child(even) {
+    background: var(--bmw-off-white);
+}
+
+.stammdaten-page__table tbody tr:hover {
+    background: #F0F4FA;
+}
+
+.stammdaten-page__table td {
+    padding: var(--space-3) var(--space-4);
+    color: var(--bmw-black);
+    border-bottom: var(--border-light);
+    vertical-align: middle;
+}
+
+.stammdaten-page__td--mono {
+    font-family: var(--font-mono);
+    font-weight: var(--font-semibold);
+    letter-spacing: 0.04em;
+}
+
+.stammdaten-page__td--num {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-weight: var(--font-bold);
+    color: var(--bmw-blue);
+}
+
+.stammdaten-page__td--actions {
+    text-align: right;
+}
+
+.stammdaten-page__empty {
+    text-align: center;
+    color: var(--bmw-mid-grey);
+    padding: var(--space-8) !important;
+    font-style: italic;
+}
+
+/* Hint */
+.stammdaten-page__hint {
+    font-size: var(--text-xs);
+    color: var(--bmw-mid-grey);
+    margin: 0;
+    padding: var(--space-2) 0;
+}

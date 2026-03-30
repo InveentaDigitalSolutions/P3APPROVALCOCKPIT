@@ -1,0 +1,80 @@
+.freigabe-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-primary);
+    font-weight: var(--font-bold);
+    letter-spacing: 0.04em;
+    border-radius: 3px;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+/* Sizes */
+.freigabe-badge--sm {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    min-width: 28px;
+}
+
+.freigabe-badge--md {
+    font-size: var(--text-xs);
+    padding: 3px 8px;
+    min-width: 36px;
+}
+
+.freigabe-badge--lg {
+    font-size: var(--text-sm);
+    padding: 5px 12px;
+    min-width: 48px;
+}
+
+/* Variants — Color scheme per user specification */
+
+/* Nicht gesetzt → Dunkelgrau (dark grey) */
+.badge--nicht-gesetzt {
+    background: var(--bmw-charcoal);
+    color: var(--bmw-white);
+    border: 1px solid var(--bmw-charcoal);
+}
+
+/* X → Weiß (white) */
+.badge--x {
+    background: var(--bmw-white);
+    color: var(--bmw-black);
+    border: 1px solid var(--bmw-silver);
+}
+
+/* Erstfreigabe → Gelb (yellow) */
+.badge--erstfreigabe {
+    background: var(--bmw-warning-light);
+    color: #8B6914;
+    border: 1px solid var(--bmw-warning);
+}
+
+/* Geplant → Weiß (white) */
+.badge--geplant {
+    background: var(--bmw-white);
+    color: var(--bmw-black);
+    border: 1px solid var(--bmw-silver);
+}
+
+/* Freigegeben → Grün (green) */
+.badge--freigegeben {
+    background: var(--bmw-success-light);
+    color: #1B7A3D;
+    border: 1px solid var(--bmw-success);
+}
+
+/* Neutral → all white (for system/current status column) */
+.badge--neutral {
+    background: var(--bmw-white);
+    color: var(--bmw-black);
+    border: 1px solid var(--bmw-silver);
+}
+
+.badge--empty {
+    background: var(--level-empty-bg);
+    color: var(--level-empty);
+    border: 1px solid #E0E0E0;
+}

@@ -1,0 +1,4 @@
+/* App-level layout — component styles live in their own CSS files */
+#root {
+  height: 100%;
+}

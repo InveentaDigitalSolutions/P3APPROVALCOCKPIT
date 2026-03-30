@@ -1,0 +1,213 @@
+/* ═══════════════════════════════════════════════════
+   Sidebar — collapsible left navigation rail
+   ═══════════════════════════════════════════════════ */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-expanded);
+    background: var(--bmw-black);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    transition: width 0.2s ease;
+    overflow: hidden;
+}
+
+.sidebar--collapsed {
+    width: var(--sidebar-collapsed);
+}
+
+/* ── Brand ── */
+.sidebar__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-4);
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+    min-height: 64px;
+    transition: padding 0.2s ease;
+}
+
+.sidebar--collapsed .sidebar__brand {
+    justify-content: center;
+    padding: var(--space-4) var(--space-2);
+}
+
+.sidebar__brand:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.sidebar__logo {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.sidebar__brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar__brand-title {
+    font-family: var(--font-primary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--bmw-white);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.sidebar__brand-sub {
+    font-size: 0.65rem;
+    color: var(--bmw-silver);
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+}
+
+/* ── Navigation ── */
+.sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: var(--space-2) var(--space-2);
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Category group */
+.sidebar__category {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sidebar__category+.sidebar__category {
+    margin-top: var(--space-3);
+}
+
+.sidebar__category-heading {
+    font-size: 0.6rem;
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.35);
+    padding: var(--space-2) 12px var(--space-1);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar__category-divider {
+    display: block;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: var(--space-1) 8px;
+}
+
+.sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 10px 12px;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    color: var(--bmw-silver);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    letter-spacing: 0.02em;
+    transition: color 0.15s, background 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar--collapsed .sidebar__link {
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.sidebar__link:hover {
+    color: var(--bmw-white);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar__link--active {
+    color: var(--bmw-white);
+    background: var(--bmw-blue);
+}
+
+.sidebar__link--active:hover {
+    background: var(--bmw-blue-hover);
+}
+
+.sidebar__link-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.sidebar__link-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Toggle button ── */
+.sidebar__toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 12px 12px;
+    margin: var(--space-2);
+    border: none;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--bmw-silver);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: var(--text-xs);
+    font-family: var(--font-primary);
+    letter-spacing: 0.02em;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.sidebar--collapsed .sidebar__toggle {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.sidebar__toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--bmw-white);
+}
+
+.sidebar__toggle-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.sidebar__toggle-icon--collapsed {
+    transform: rotate(90deg);
+}
+
+.sidebar__toggle-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

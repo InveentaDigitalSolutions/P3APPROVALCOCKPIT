@@ -1,0 +1,52 @@
+.benachrichtigungen-page {
+    padding: var(--space-6);
+    max-width: 900px;
+}
+
+.benachrichtigungen-page__header {
+    margin-bottom: var(--space-6);
+}
+
+.benachrichtigungen-page__title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    color: var(--bmw-black);
+    margin: 0 0 var(--space-1) 0;
+}
+
+.benachrichtigungen-page__subtitle {
+    font-size: var(--text-sm);
+    color: var(--bmw-mid-grey);
+    margin: 0;
+}
+
+.benachrichtigungen-page__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12) var(--space-6);
+    background: var(--bmw-off-white);
+    border: var(--border-light);
+    border-radius: var(--border-radius-lg);
+    text-align: center;
+}
+
+.benachrichtigungen-page__empty-icon {
+    color: var(--bmw-silver);
+    margin-bottom: var(--space-4);
+}
+
+.benachrichtigungen-page__empty-text {
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--bmw-charcoal);
+    margin: 0 0 var(--space-2) 0;
+}
+
+.benachrichtigungen-page__empty-hint {
+    font-size: var(--text-sm);
+    color: var(--bmw-mid-grey);
+    margin: 0;
+    max-width: 400px;
+}
