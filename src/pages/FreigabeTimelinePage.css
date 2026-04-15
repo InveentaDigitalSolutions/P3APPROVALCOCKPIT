@@ -1,0 +1,313 @@
+/* ============================================================
+   FreigabeTimelinePage — HVS Approval Timeline
+   ============================================================ */
+.ftl-page { display: flex; flex-direction: column; gap: var(--space-4); }
+
+/* ── Header ── */
+.ftl-page__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+.ftl-page__title { font-size: var(--text-xl); font-weight: var(--font-bold); color: var(--bmw-black); margin: 0 0 var(--space-1); }
+.ftl-page__subtitle { font-size: var(--text-sm); color: var(--bmw-mid-grey); margin: 0; }
+.ftl-page__subtitle strong { color: var(--bmw-charcoal); }
+.ftl-nav { display: flex; align-items: center; gap: var(--space-2); }
+
+/* ══════════════════════════════════════════════════════
+   I-Stufe Selector Bar
+   ══════════════════════════════════════════════════════ */
+.ftl-selector {
+    padding: var(--space-4);
+    background: var(--bmw-white);
+    border: var(--border-light);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.ftl-selector__label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--bmw-charcoal);
+}
+.ftl-selector__chips {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+.ftl-selector__empty {
+    font-size: var(--text-sm);
+    color: var(--bmw-mid-grey);
+    font-style: italic;
+}
+.ftl-selector__chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: var(--space-2) var(--space-4);
+    border: 2px solid;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-family: var(--font-primary);
+    transition: all var(--transition-fast);
+    min-width: 120px;
+}
+.ftl-selector__chip:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+.ftl-selector__chip--selected {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.ftl-selector__chip-name {
+    font-size: 0.7rem;
+    font-weight: var(--font-bold);
+    font-family: var(--font-mono);
+    letter-spacing: 0.03em;
+}
+.ftl-selector__chip-reife {
+    font-size: 0.6rem;
+    font-weight: var(--font-medium);
+    opacity: 0.8;
+}
+.ftl-selector__hint {
+    font-size: var(--text-xs);
+    color: var(--bmw-blue);
+    font-weight: var(--font-semibold);
+    padding: var(--space-2) var(--space-3);
+    background: var(--bmw-blue-light);
+    border-radius: var(--border-radius);
+}
+
+/* ── Filter Panel ── */
+.ftl-filters { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); background: var(--bmw-white); border: var(--border-light); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); }
+.ftl-filters__row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.ftl-filters__search { flex: 1; min-width: 180px; max-width: 280px; padding: var(--space-2) var(--space-3); font-size: var(--text-sm); font-family: var(--font-primary); border: var(--border-light); border-radius: var(--border-radius); background: var(--bmw-off-white); color: var(--bmw-black); outline: none; }
+.ftl-filters__search:focus { border-color: var(--bmw-blue); box-shadow: 0 0 0 3px rgba(28,105,212,0.12); }
+.ftl-filters__select { padding: var(--space-2) var(--space-3); font-size: var(--text-sm); font-family: var(--font-primary); border: var(--border-light); border-radius: var(--border-radius); background: var(--bmw-off-white); color: var(--bmw-black); outline: none; cursor: pointer; min-width: 130px; }
+.ftl-filters__stats { display: flex; gap: var(--space-4); font-size: var(--text-xs); color: var(--bmw-mid-grey); font-weight: var(--font-semibold); }
+
+/* ══════════════════════════════════════════════════════
+   Gantt Grid
+   ══════════════════════════════════════════════════════ */
+.ftl-gantt { border: var(--border-light); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-md); background: var(--bmw-white); overflow-x: auto; }
+
+/* Header */
+.ftl-gantt__header { display: flex; border-bottom: 2px solid var(--bmw-charcoal); background: var(--bmw-black); position: sticky; top: 0; z-index: 10; }
+.ftl-gantt__label-col { min-width: 220px; max-width: 220px; flex-shrink: 0; padding: var(--space-3) var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
+.ftl-gantt__label-title { font-size: 0.7rem; font-weight: var(--font-semibold); color: var(--bmw-silver); text-transform: uppercase; letter-spacing: 0.07em; }
+.ftl-gantt__kw-col { flex: 1; min-width: 220px; padding: var(--space-2) var(--space-3); text-align: center; border-left: 1px solid var(--bmw-charcoal); }
+.ftl-gantt__kw-col--current { background: rgba(28,105,212,0.25); }
+.ftl-gantt__kw-hint { display: block; font-size: 0.6rem; font-weight: var(--font-medium); color: var(--bmw-silver); margin-bottom: 2px; }
+.ftl-gantt__kw-num { display: block; font-size: var(--text-base); font-weight: var(--font-bold); color: var(--bmw-white); font-family: var(--font-mono); }
+.ftl-gantt__kw-dates { display: block; font-size: var(--text-xs); color: var(--bmw-silver); margin-top: 2px; }
+.ftl-gantt__empty { padding: var(--space-8); text-align: center; color: var(--bmw-mid-grey); font-style: italic; }
+
+/* ── I-Stufe summary row ── */
+.ftl-gantt__istufe-row { display: flex; border-bottom: 2px solid var(--bmw-light-grey); background: var(--bmw-off-white); }
+.ftl-gantt__istufe-row-title { font-size: 0.65rem; font-weight: var(--font-bold); color: var(--bmw-mid-grey); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* I-Stufe chips */
+.ftl-gantt__istufe-chip {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 5px 8px; border-radius: 4px; margin-bottom: 4px; width: 100%;
+    cursor: pointer; transition: all var(--transition-fast);
+}
+.ftl-gantt__istufe-chip--selected { box-shadow: 0 0 0 3px rgba(255,255,255,0.8), 0 0 0 5px currentColor; transform: scale(1.02); }
+.ftl-gantt__istufe-chip--dimmed { opacity: 0.35; }
+.ftl-gantt__istufe-chip:hover { opacity: 1; }
+.ftl-gantt__istufe-top {
+    display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 4px;
+}
+.ftl-gantt__istufe-lead {
+    display: flex; align-items: center; gap: 3px;
+    font-size: 0.55rem; font-weight: var(--font-bold); color: rgba(255,255,255,0.9);
+    cursor: pointer; user-select: none;
+}
+.ftl-gantt__istufe-lead input[type="checkbox"] {
+    width: 13px; height: 13px; cursor: pointer; accent-color: #fff;
+    margin: 0;
+}
+.ftl-gantt__istufe-rank {
+    padding: 1px 2px; font-size: 0.6rem; font-weight: var(--font-bold); font-family: var(--font-mono);
+    background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 3px; cursor: pointer; outline: none; min-width: 30px; text-align: center;
+}
+.ftl-gantt__istufe-rank option { color: var(--bmw-black); background: var(--bmw-white); }
+.ftl-gantt__istufe-name { font-size: 0.65rem; font-weight: var(--font-bold); color: #fff; font-family: var(--font-mono); text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+.ftl-gantt__istufe-offset { font-size: 0.6rem; font-weight: var(--font-medium); color: rgba(255,255,255,0.8); }
+.ftl-gantt__cell--istufe { justify-content: center; align-items: center; }
+
+/* ── HVS Data Rows ── */
+.ftl-gantt__row { display: flex; border-bottom: var(--border-light); background: var(--bmw-white); transition: background var(--transition-fast); min-height: 70px; }
+.ftl-gantt__row--alt { background: var(--bmw-off-white); }
+.ftl-gantt__row:hover { background: #F0F4FA; }
+.ftl-gantt__row--inactive { opacity: 0.45; }
+.ftl-gantt__row--inactive:hover { opacity: 0.6; }
+
+/* Active/Inactive toggle */
+.ftl-gantt__hvs-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; margin-bottom: 4px; }
+.ftl-gantt__hvs-toggle input { display: none; }
+.ftl-gantt__hvs-toggle-track {
+    position: relative; width: 32px; height: 16px; border-radius: 8px;
+    background: var(--bmw-light-grey); transition: background var(--transition-fast);
+}
+.ftl-gantt__hvs-toggle-track--on { background: var(--bmw-success); }
+.ftl-gantt__hvs-toggle-thumb {
+    position: absolute; top: 2px; left: 2px; width: 12px; height: 12px;
+    border-radius: 50%; background: #fff; transition: left var(--transition-fast);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.ftl-gantt__hvs-toggle-track--on .ftl-gantt__hvs-toggle-thumb { left: 18px; }
+.ftl-gantt__hvs-toggle-label { font-size: 0.6rem; font-weight: var(--font-bold); color: var(--bmw-success); text-transform: uppercase; letter-spacing: 0.05em; }
+.ftl-gantt__hvs-toggle-label--off { color: var(--bmw-mid-grey); }
+
+.ftl-gantt__label-col--row { display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: var(--space-2) var(--space-4); border-right: var(--border-light); }
+.ftl-gantt__hvs-main { display: flex; align-items: baseline; gap: var(--space-2); }
+.ftl-gantt__hvs-id { font-family: var(--font-mono); font-size: var(--text-sm); font-weight: var(--font-bold); color: var(--bmw-black); }
+.ftl-gantt__hvs-wbs { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--font-semibold); color: var(--bmw-blue); }
+.ftl-gantt__hvs-meta { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.ftl-gantt__hvs-muster { font-size: 0.65rem; color: var(--bmw-mid-grey); font-weight: var(--font-semibold); }
+.ftl-gantt__hvs-pth { font-size: 0.65rem; padding: 1px 5px; border-radius: 2px; background: var(--bmw-blue-light); color: var(--bmw-blue); font-weight: var(--font-bold); font-family: var(--font-mono); }
+.ftl-gantt__hvs-speicher { font-size: 0.65rem; color: var(--bmw-silver); font-family: var(--font-mono); }
+.ftl-gantt__hvs-links { display: flex; gap: var(--space-1); margin-top: 2px; }
+.ftl-gantt__link { display: inline-flex; font-size: 0.6rem; font-weight: var(--font-bold); padding: 1px 6px; border-radius: 2px; cursor: pointer; transition: opacity var(--transition-fast); }
+.ftl-gantt__link:hover { opacity: 0.8; }
+.ftl-gantt__link--wmm { background: #00A550; color: #fff; }
+.ftl-gantt__link--mia { background: #8B5CF6; color: #fff; }
+
+/* ── KW Cells ── */
+.ftl-gantt__cell { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 3px; padding: var(--space-2) var(--space-3); border-left: var(--border-light); }
+.ftl-gantt__cell--current { background: rgba(28,105,212,0.04); }
+.ftl-gantt__cell-empty { color: var(--bmw-silver); font-size: var(--text-sm); text-align: center; align-self: center; }
+
+/* ── Cell row (one per I-Stufe) ── */
+.ftl-gantt__cell-row {
+    display: flex; align-items: center; gap: var(--space-2);
+    padding: 3px 0; position: relative;
+    border-left: 3px solid transparent;
+    padding-left: var(--space-2);
+    border-radius: 2px;
+    transition: opacity var(--transition-fast), background var(--transition-fast);
+    flex-wrap: wrap;
+}
+.ftl-gantt__cell-row--soll {
+    border-left-color: var(--bmw-mid-grey);
+    opacity: 0.9;
+}
+.ftl-gantt__cell-row--dimmed {
+    opacity: 0.3;
+    pointer-events: none;
+}
+.ftl-gantt__cell-row--selected {
+    background: rgba(28,105,212,0.06);
+    border-radius: 4px;
+}
+
+.ftl-gantt__cell-lbl {
+    font-size: 0.55rem; font-weight: var(--font-bold); color: var(--bmw-mid-grey);
+    text-transform: uppercase; letter-spacing: 0.05em; min-width: 28px; flex-shrink: 0;
+}
+
+/* Offset label (colored by I-Stufe) */
+.ftl-gantt__cell-offset {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; font-weight: var(--font-bold); font-family: var(--font-mono);
+    padding: 2px 6px; border-radius: 3px; min-width: 52px;
+    white-space: nowrap; letter-spacing: 0.03em;
+}
+
+/* Badge */
+.ftl-gantt__badge { display: inline-flex; align-items: center; justify-content: center; gap: 3px; min-width: 40px; padding: 3px 8px; border-radius: 3px; font-size: var(--text-xs); font-weight: var(--font-bold); font-family: var(--font-mono); letter-spacing: 0.04em; cursor: default; white-space: nowrap; }
+.ftl-gantt__badge--sm { padding: 2px 6px; font-size: 0.65rem; min-width: 34px; }
+.ftl-gantt__badge--clickable { cursor: pointer; transition: transform var(--transition-fast), box-shadow var(--transition-fast); }
+.ftl-gantt__badge--clickable:hover { transform: scale(1.08); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.ftl-gantt__badge--empty { background: var(--bmw-off-white); color: var(--bmw-silver); border: 1px dashed var(--bmw-light-grey); }
+.ftl-gantt__badge--readonly { opacity: 0.5; }
+.ftl-gantt__badge--needs-lead { background: var(--bmw-warning-light); color: var(--bmw-warning); border: 1px dashed var(--bmw-warning); font-size: 0.55rem; font-weight: var(--font-semibold); font-family: var(--font-primary); }
+.ftl-gantt__badge-caret { font-size: 0.5rem; opacity: 0.7; }
+
+/* Jira / MIA refs */
+.ftl-gantt__cell-refs { display: flex; gap: var(--space-1); }
+.ftl-gantt__ref { font-size: 0.5rem; font-family: var(--font-mono); padding: 1px 4px; border-radius: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.ftl-gantt__ref--jira { background: #E8F1FB; color: var(--bmw-blue); }
+.ftl-gantt__ref--mia { background: #F3E8FF; color: #7C3AED; }
+
+/* ── Manual entry row ── */
+.ftl-gantt__cell-row--manual { background: rgba(255,243,224,0.4); border-radius: 3px; padding: 3px var(--space-2); }
+
+/* Badge group (auto + manual offsets in same row) */
+.ftl-gantt__cell-badge-group { display: flex; align-items: center; gap: var(--space-2); position: relative; flex-wrap: wrap; }
+
+/* Remove button */
+.ftl-gantt__remove-btn {
+    width: 18px; height: 18px; border: none; background: var(--bmw-error-light); color: var(--bmw-error);
+    border-radius: 50%; font-size: 0.7rem; font-weight: var(--font-bold); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: background var(--transition-fast);
+}
+.ftl-gantt__remove-btn:hover { background: var(--bmw-error); color: #fff; }
+
+/* Add button */
+.ftl-gantt__cell-add { position: relative; display: flex; align-items: center; }
+.ftl-gantt__add-btn {
+    width: 24px; height: 24px; border: 1px dashed var(--bmw-light-grey); background: var(--bmw-off-white);
+    color: var(--bmw-mid-grey); border-radius: 4px; font-size: 1rem; font-weight: var(--font-bold);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all var(--transition-fast);
+}
+.ftl-gantt__add-btn:hover { border-color: var(--bmw-blue); color: var(--bmw-blue); background: var(--bmw-blue-light); }
+
+/* ── Add Entry Picker ── */
+.ftl-add-picker {
+    position: absolute; bottom: 100%; left: 0; z-index: 60;
+    background: var(--bmw-white); border: var(--border-mid); border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg); padding: var(--space-3); min-width: 220px; max-height: 300px; overflow-y: auto;
+}
+.ftl-add-picker__title {
+    font-size: var(--text-xs); font-weight: var(--font-bold); color: var(--bmw-charcoal);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-2);
+    display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
+}
+.ftl-add-picker__selected {
+    font-family: var(--font-mono); color: var(--bmw-blue); text-transform: none; letter-spacing: 0;
+}
+.ftl-add-picker__back {
+    border: none; background: none; color: var(--bmw-blue); font-size: var(--text-xs);
+    font-weight: var(--font-semibold); cursor: pointer; padding: 0; margin-bottom: var(--space-2);
+}
+.ftl-add-picker__back:hover { text-decoration: underline; }
+.ftl-add-picker__list { display: flex; flex-direction: column; gap: 2px; }
+.ftl-add-picker__item {
+    display: flex; align-items: center; gap: var(--space-2); width: 100%;
+    padding: var(--space-2) var(--space-3); border: none; background: none;
+    cursor: pointer; font-family: var(--font-mono); font-size: var(--text-xs);
+    font-weight: var(--font-semibold); color: var(--bmw-charcoal);
+    border-radius: 3px; transition: background var(--transition-fast);
+}
+.ftl-add-picker__item:hover { background: var(--bmw-off-white); }
+.ftl-add-picker__swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.ftl-add-picker__reife { color: var(--bmw-mid-grey); font-weight: var(--font-regular); margin-left: auto; }
+.ftl-add-picker__group-label {
+    font-size: 0.6rem; font-weight: var(--font-bold); color: var(--bmw-mid-grey);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    padding: var(--space-2) var(--space-3) var(--space-1);
+    border-top: var(--border-light); margin-top: var(--space-1);
+}
+.ftl-add-picker__group-label:first-of-type { border-top: none; margin-top: 0; }
+.ftl-add-picker__item--inactive { opacity: 0.7; }
+
+/* ── Dropdown ── */
+.ftl-dropdown { position: absolute; top: 100%; left: 0; z-index: 50; background: var(--bmw-white); border: var(--border-mid); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); padding: var(--space-1); min-width: 140px; }
+.ftl-dropdown__option { display: flex; align-items: center; gap: var(--space-2); width: 100%; padding: var(--space-2) var(--space-3); border: none; background: none; cursor: pointer; font-family: var(--font-primary); font-size: var(--text-sm); border-radius: 3px; transition: background var(--transition-fast); }
+.ftl-dropdown__option:hover { background: var(--bmw-off-white); }
+.ftl-dropdown__option--active { background: var(--bmw-blue-light); }
+.ftl-dropdown__empty { color: var(--bmw-mid-grey); font-size: var(--text-xs); }
+
+/* ── Legend ── */
+.ftl-legend { display: flex; gap: var(--space-8); padding: var(--space-3) 0; flex-wrap: wrap; }
+.ftl-legend__section { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.ftl-legend__heading { font-size: var(--text-xs); font-weight: var(--font-bold); color: var(--bmw-charcoal); text-transform: uppercase; letter-spacing: 0.05em; }
+.ftl-legend__item { display: flex; align-items: center; gap: var(--space-1); }
+.ftl-legend__swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+.ftl-legend__label { font-size: var(--text-xs); font-weight: var(--font-semibold); color: var(--bmw-charcoal); }

@@ -27,6 +27,13 @@ const SpeichertypIcon = () => (
     </svg>
 );
 
+const TimelineIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="4" rx="1" /><rect x="5" y="12" width="14" height="4" rx="1" />
+        <rect x="7" y="20" width="10" height="4" rx="1" />
+    </svg>
+);
+
 const IStufeIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
@@ -55,6 +62,8 @@ const NAV_CATEGORIES: NavCategory[] = [
         heading: 'Hauptmenü',
         items: [
             { to: '/', label: 'Übersicht', icon: <OverviewIcon /> },
+            { to: '/freigabe-timeline', label: 'Freigabe Timeline', icon: <TimelineIcon /> },
+            { to: '/freigabe-bulk', label: 'Bulk Freigabe', icon: <TimelineIcon /> },
         ],
     },
     {

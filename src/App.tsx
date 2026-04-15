@@ -6,6 +6,8 @@ import { OverviewPage } from './pages/OverviewPage';
 import { StammdatenPage } from './pages/StammdatenPage';
 import { IStufePage } from './pages/IStufePage';
 import { BenachrichtigungenPage } from './pages/BenachrichtigungenPage';
+import { FreigabeTimelinePage } from './pages/FreigabeTimelinePage';
+import { FreigabeBulkPage } from './pages/FreigabeBulkPage';
 import './App.css';
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
                 <Route path="/" element={<OverviewPage />} />
                 <Route path="/speichertyp" element={<StammdatenPage />} />
                 <Route path="/istufe" element={<IStufePage />} />
+                <Route path="/freigabe-timeline" element={<FreigabeTimelinePage />} />
+                <Route path="/freigabe-bulk" element={<FreigabeBulkPage />} />
                 <Route path="/benachrichtigungen" element={<BenachrichtigungenPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

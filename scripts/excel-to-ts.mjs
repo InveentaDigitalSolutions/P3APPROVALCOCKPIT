@@ -5,7 +5,7 @@
  * Also runs automatically via Vite watcher when the xlsx file changes.
  */
 import ExcelJS from 'exceljs';
-import { writeFileSync } from 'fs';
+import { writeFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -75,6 +75,10 @@ function normaliseLevel(raw) {
 
 
 async function main() {
+    if (!existsSync(XLSX_PATH)) {
+        console.log('⚠️  Excel file not found, skipping generation (using existing records.generated.ts)');
+        return;
+    }
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(XLSX_PATH);
 
