@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { getActiveIStufen, getOffsetForWeek, weekToIndex, ISTUFE_MASTERS } from '../data/istufeData';
 import type { IStufeMaster } from '../data/istufeData';
-import { HVS_DATA, buildMiaName } from '../data/speicherData';
+import { HVS_DATA } from '../data/speicherData';
 import { FREIGABE_SCHEDULE_UNIQUE } from '../data/freigabeSchedule';
 import {
     getISOWeek,
@@ -448,8 +448,10 @@ export const FreigabeBulkPage: React.FC = () => {
 
     /* ── Bulk Edit state ── */
     const [bulkWeek, setBulkWeek] = useState<string>('');
+    const [bulkOffset, setBulkOffset] = useState<string>('');
     const [bulkLevel, setBulkLevel] = useState<string>('');
     const [bulkHvsSelection, setBulkHvsSelection] = useState<Set<string>>(new Set());
+    const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 
     const toggleBulkHvs = useCallback((key: string) => {
         setBulkHvsSelection(prev => {
@@ -482,8 +484,8 @@ export const FreigabeBulkPage: React.FC = () => {
                 // Set for the selected I-Stufe
                 next[`${effectiveSelected}|${bulkWeek}|${hvsKey}`] = bulkLevel;
                 // Cascade to group members
-                const rank = istufeRank[`${bulkWeek}|${effectiveSelected}`] ?? (activeInWeek.findIndex(m => m.istufe === effectiveSelected) + 1);
-                const groupMembers = activeInWeek
+                const rank: number = istufeRank[`${bulkWeek}|${effectiveSelected}`] ?? (activeInWeek.findIndex(m => m.istufe === effectiveSelected) + 1);
+                const groupMembers: string[] = activeInWeek
                     .filter(m => (istufeRank[`${bulkWeek}|${m.istufe}`] ?? (activeInWeek.findIndex(x => x.istufe === m.istufe) + 1)) === rank)
                     .map(m => m.istufe);
                 for (const member of groupMembers) {
@@ -497,7 +499,7 @@ export const FreigabeBulkPage: React.FC = () => {
     }, [effectiveSelected, bulkWeek, bulkLevel, bulkHvsSelection, allVisibleIStufen, istufeRank]);
 
     const bulkCount = bulkHvsSelection.size;
-    const bulkReady = !!effectiveSelected && !!bulkWeek && !!bulkLevel && bulkCount > 0;
+    const bulkReady = !!effectiveSelected && !!bulkWeek && !!bulkOffset && !!bulkLevel && bulkCount > 0;
 
     /* ══════════════════════════════════════════════════
        RENDER
@@ -593,7 +595,20 @@ export const FreigabeBulkPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Step 2: Level */}
+                    {/* Step 2: OFFSET */}
+                    <div className="ftl-bulk__field">
+                        <label className="ftl-bulk__label">ISTUFE (Offset)</label>
+                        {bulkWeek ? (
+                            <select className="ftl-bulk__select" value={bulkOffset} onChange={e => setBulkOffset(e.target.value)}>
+                                <option value="">Offset wählen...</option>
+                                {OFFSET_LIST.map(off => (
+                                    <option key={off} value={off}>{off}</option>
+                                ))}
+                            </select>
+                        ) : <span className="ftl-bulk__no-weeks">Zuerst KW wählen</span>}
+                    </div>
+
+                    {/* Step 3: Level */}
                     <div className="ftl-bulk__field">
                         <label className="ftl-bulk__label">Freigabe-Level</label>
                         <select className="ftl-bulk__select" value={bulkLevel} onChange={e => setBulkLevel(e.target.value)}>
@@ -602,7 +617,7 @@ export const FreigabeBulkPage: React.FC = () => {
                         </select>
                     </div>
 
-                    {/* Step 3: HVS selection */}
+                    {/* Step 4: HVS selection */}
                     <div className="ftl-bulk__field">
                         <label className="ftl-bulk__label">
                             HVS ({bulkCount} ausgewählt)
@@ -631,14 +646,48 @@ export const FreigabeBulkPage: React.FC = () => {
                     <div className="ftl-bulk__field">
                         <button className={`btn btn--primary${bulkReady ? '' : ' btn--disabled'}`}
                             disabled={!bulkReady}
-                            onClick={applyBulk}>
-                            Auf {bulkCount} HVS anwenden
+                            onClick={() => setShowBulkConfirm(true)}>
+                            Vorschau & Bestätigen
                         </button>
                     </div>
                 </div>
-                {bulkReady && (
-                    <div className="ftl-bulk__preview">
-                        Vorschau: <strong>{bulkLevel}</strong> für <strong>{effectiveSelected}</strong> in <strong>KW{bulkWeek.split('-')[1]}</strong> auf {bulkCount} Speichertypen anwenden
+
+                {/* Confirmation dialog */}
+                {showBulkConfirm && bulkReady && (
+                    <div className="ftl-bulk__confirm">
+                        <div className="ftl-bulk__confirm-title">Bulk-Freigabe bestätigen</div>
+                        <div className="ftl-bulk__confirm-summary">
+                            <div className="ftl-bulk__confirm-row">
+                                <span className="ftl-bulk__confirm-label">Softwarestand:</span>
+                                <strong>{effectiveSelected}</strong>
+                            </div>
+                            <div className="ftl-bulk__confirm-row">
+                                <span className="ftl-bulk__confirm-label">Woche:</span>
+                                <strong>KW{bulkWeek.split('-')[1]}</strong>
+                            </div>
+                            <div className="ftl-bulk__confirm-row">
+                                <span className="ftl-bulk__confirm-label">ISTUFE:</span>
+                                <strong>{bulkOffset}</strong>
+                            </div>
+                            <div className="ftl-bulk__confirm-row">
+                                <span className="ftl-bulk__confirm-label">Freigabe-Level:</span>
+                                <span className="ftl-gantt__badge" style={{ backgroundColor: lvlColor(bulkLevel).bg, color: lvlColor(bulkLevel).text }}>{bulkLevel}</span>
+                            </div>
+                            <div className="ftl-bulk__confirm-row">
+                                <span className="ftl-bulk__confirm-label">Betroffene HVS ({bulkCount}):</span>
+                            </div>
+                            <div className="ftl-bulk__confirm-hvs">
+                                {filteredHvs.filter(h => bulkHvsSelection.has(h.key)).map(h => (
+                                    <span key={h.key} className="ftl-bulk__confirm-hvs-tag">{h.wbsType} {h.muster}</span>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="ftl-bulk__confirm-actions">
+                            <button className="btn btn--ghost" onClick={() => setShowBulkConfirm(false)}>Abbrechen</button>
+                            <button className="btn btn--primary" onClick={() => { applyBulk(); setShowBulkConfirm(false); }}>
+                                Bestätigen & Anwenden
+                            </button>
+                        </div>
                     </div>
                 )}
                 </>
@@ -689,13 +738,23 @@ export const FreigabeBulkPage: React.FC = () => {
                             <div key={w.key} className={`ftl-gantt__cell ftl-gantt__cell--istufe${isNow ? ' ftl-gantt__cell--current' : ''}`}>
                                 {active.map(m => {
                                     const c = istufeColors.get(m.istufe)!;
-                                    const isSelected = effectiveSelected === m.istufe;
-                                    const isDimmed = effectiveSelected !== null && !isSelected;
+                                    const isSelectedInThisKW = effectiveSelected === m.istufe && (!bulkWeek || bulkWeek === yw);
+                                    const isDimmed = !!bulkWeek && bulkWeek !== yw;
                                     return (
                                         <div key={m.istufe}
-                                            className={`ftl-gantt__istufe-chip${isSelected ? ' ftl-gantt__istufe-chip--selected' : ''}${isDimmed ? ' ftl-gantt__istufe-chip--dimmed' : ''}`}
+                                            className={`ftl-gantt__istufe-chip${isSelectedInThisKW ? ' ftl-gantt__istufe-chip--selected' : ''}${isDimmed ? ' ftl-gantt__istufe-chip--dimmed' : ''}`}
                                             style={{ backgroundColor: c.bar }}
-                                            onClick={() => setSelectedIstufe(isSelected ? null : m.istufe)}>
+                                            onClick={() => {
+                                                if (isSelectedInThisKW && bulkWeek === yw) {
+                                                    setSelectedIstufe(null);
+                                                    setBulkWeek('');
+                                                    setBulkOffset('');
+                                                } else {
+                                                    setSelectedIstufe(m.istufe);
+                                                    setBulkWeek(yw);
+                                                    setBulkOffset('');
+                                                }
+                                            }}>
                                             <div className="ftl-gantt__istufe-top">
                                                 <label className="ftl-gantt__istufe-lead" onClick={e => e.stopPropagation()} title="Lead I-Stufe (für diese KW)">
                                                     <input type="checkbox" checked={!!istufeLeads[`${yw}|${m.istufe}`]}
@@ -808,8 +867,10 @@ export const FreigabeBulkPage: React.FC = () => {
 
                             const rows = [...rowMap.values()];
 
+                            const isLockedKW = !!bulkWeek && bulkWeek !== yw;
+
                             return (
-                                <div key={w.key} className={`ftl-gantt__cell${isNow ? ' ftl-gantt__cell--current' : ''}`}>
+                                <div key={w.key} className={`ftl-gantt__cell${isNow ? ' ftl-gantt__cell--current' : ''}${isLockedKW ? ' ftl-gantt__cell--locked' : ''}`}>
                                     {/* CDH Soll badges */}
                                     {cdhHits.map((ch, ci) => (
                                         <div key={`s${ci}`} className="ftl-gantt__cell-row ftl-gantt__cell-row--soll">
@@ -825,7 +886,7 @@ export const FreigabeBulkPage: React.FC = () => {
                                         const c = istufeColors.get(row.istufe) ?? ISTUFE_PALETTE[0];
                                         const isSelected = effectiveSelected === row.istufe;
                                         const isDimmed = effectiveSelected !== null && !isSelected;
-                                        const canEdit = isActive && isSelected && (row.isAutoActive ? isEditableInWeek(yw, row.istufe, autoActive) : true);
+                                        const canEdit = isActive && !isLockedKW && isSelected && (row.isAutoActive ? isEditableInWeek(yw, row.istufe, autoActive) : true);
                                         const needsLead = isSelected && row.isAutoActive && groupNeedsLeadInWeek(yw, row.istufe, autoActive);
 
                                         // Render function for a single offset badge

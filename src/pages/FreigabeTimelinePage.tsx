@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { getActiveIStufen, getOffsetForWeek, weekToIndex, ISTUFE_MASTERS } from '../data/istufeData';
 import type { IStufeMaster } from '../data/istufeData';
-import { HVS_DATA, buildMiaName } from '../data/speicherData';
+import { HVS_DATA } from '../data/speicherData';
 import { FREIGABE_SCHEDULE_UNIQUE } from '../data/freigabeSchedule';
 import {
     getISOWeek,
