@@ -1,5 +1,5 @@
 /* ============================================================
-   FreigabeTimelinePage — HVS Approval Timeline
+   FreigabeBulkPage — HVS Approval Timeline with Bulk Edit
    ============================================================ */
 .ftl-page { display: flex; flex-direction: column; gap: var(--space-4); }
 
@@ -104,7 +104,7 @@
 .ftl-gantt__empty { padding: var(--space-8); text-align: center; color: var(--bmw-mid-grey); font-style: italic; }
 
 /* ── I-Stufe summary row ── */
-.ftl-gantt__istufe-row { display: flex; border-bottom: 2px solid var(--bmw-light-grey); background: var(--bmw-off-white); }
+.ftl-gantt__istufe-row { display: flex; border-bottom: 2px solid var(--bmw-light-grey); background: var(--bmw-off-white); position: relative; z-index: 5; }
 .ftl-gantt__istufe-row-title { font-size: 0.65rem; font-weight: var(--font-bold); color: var(--bmw-mid-grey); text-transform: uppercase; letter-spacing: 0.05em; }
 
 /* I-Stufe chips */
@@ -137,6 +137,128 @@
 .ftl-gantt__istufe-name { font-size: 0.65rem; font-weight: var(--font-bold); color: #fff; font-family: var(--font-mono); text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
 .ftl-gantt__istufe-offset { font-size: 0.6rem; font-weight: var(--font-medium); color: rgba(255,255,255,0.8); }
 .ftl-gantt__cell--istufe { justify-content: center; align-items: center; }
+
+/* ── Ticket rows (Penthouse + Verbund) ── */
+.ftl-gantt__ticket-row { display: flex; border-bottom: 2px solid var(--bmw-light-grey); background: #F7F9FC; position: relative; z-index: 5; }
+.ftl-gantt__ticket-row--verbund { background: #F1F5FA; }
+.ftl-gantt__ticket-sub { display: block; font-size: 0.55rem; color: var(--bmw-silver); margin-top: 2px; }
+.ftl-gantt__cell--tickets {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    padding: 6px 8px; align-items: center; justify-content: center;
+    min-height: 36px;
+}
+.ftl-gantt__ticket-empty { font-size: 0.7rem; color: var(--bmw-silver); opacity: 0.5; }
+
+/* Ticket badge (click → opens drawer) */
+.ftl-ticket-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 18px; padding: 0 6px;
+    border: none; border-radius: 9px;
+    font-size: 0.6rem; font-weight: var(--font-bold); color: #fff;
+    font-family: var(--font-mono); letter-spacing: 0.02em;
+    cursor: pointer; user-select: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.ftl-ticket-badge:hover { transform: scale(1.08); box-shadow: 0 2px 6px rgba(0,0,0,0.22); }
+.ftl-ticket-badge--active {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor, 0 2px 6px rgba(0,0,0,0.22);
+    transform: scale(1.08);
+}
+/* Verbund badges carry longer names (e.g. "420 HV-L2") — size for readability */
+.ftl-ticket-badge--verbund {
+    min-width: 54px; height: 20px; padding: 0 8px;
+    font-size: 0.62rem;
+    border: 1px dashed rgba(255,255,255,0.55);
+}
+
+/* ── Ticket detail drawer ── */
+.ftl-drawer-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.25);
+    z-index: 900;
+    animation: ftl-drawer-fade-in 0.15s ease;
+}
+.ftl-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 400px; max-width: 90vw;
+    background: var(--bmw-white);
+    box-shadow: -4px 0 24px rgba(0,0,0,0.18);
+    display: flex; flex-direction: column;
+    z-index: 1000;
+    animation: ftl-drawer-slide-in 0.2s ease;
+}
+@keyframes ftl-drawer-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ftl-drawer-slide-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+.ftl-drawer__header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 20px 24px; color: #fff;
+}
+.ftl-drawer__kicker {
+    font-size: 0.6rem; font-weight: var(--font-bold);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    opacity: 0.85;
+}
+.ftl-drawer__title {
+    margin: 4px 0 0 0;
+    font-size: 1.25rem; font-weight: var(--font-bold);
+    font-family: var(--font-mono);
+}
+.ftl-drawer__close {
+    background: rgba(255,255,255,0.18); border: none; color: #fff;
+    width: 32px; height: 32px; border-radius: 50%;
+    font-size: 22px; line-height: 1; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.15s ease;
+}
+.ftl-drawer__close:hover { background: rgba(255,255,255,0.32); }
+
+.ftl-drawer__body {
+    flex: 1; overflow-y: auto;
+    padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 12px;
+}
+.ftl-drawer__row {
+    display: flex; gap: 16px; align-items: baseline;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--bmw-light-grey);
+}
+.ftl-drawer__row:last-of-type { border-bottom: none; padding-bottom: 0; }
+.ftl-drawer__label {
+    flex: 0 0 110px;
+    font-size: 0.65rem; font-weight: var(--font-bold); text-transform: uppercase;
+    color: var(--bmw-mid-grey); letter-spacing: 0.05em;
+}
+.ftl-drawer__value {
+    flex: 1;
+    font-size: 0.85rem; color: var(--bmw-black); font-family: var(--font-mono);
+    word-break: break-all;
+}
+.ftl-drawer__link {
+    flex: 1;
+    font-size: 0.85rem; color: #1C69D4; font-family: var(--font-mono);
+    text-decoration: none;
+}
+.ftl-drawer__link:hover { text-decoration: underline; }
+
+.ftl-drawer__section {
+    margin-top: 8px; padding-top: 12px;
+    border-top: 1px solid var(--bmw-light-grey);
+}
+.ftl-drawer__section-title {
+    font-size: 0.65rem; font-weight: var(--font-bold); text-transform: uppercase;
+    color: var(--bmw-mid-grey); letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+.ftl-drawer__count { color: var(--bmw-silver); margin-left: 4px; }
+.ftl-drawer__tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.ftl-drawer__tag {
+    display: inline-block; padding: 3px 8px;
+    background: var(--bmw-off-white); border: 1px solid var(--bmw-light-grey);
+    border-radius: 4px;
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--bmw-black);
+}
 
 /* ── HVS Data Rows ── */
 .ftl-gantt__row { display: flex; border-bottom: var(--border-light); background: var(--bmw-white); transition: background var(--transition-fast); min-height: 70px; }
@@ -179,6 +301,7 @@
 /* ── KW Cells ── */
 .ftl-gantt__cell { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 3px; padding: var(--space-2) var(--space-3); border-left: var(--border-light); }
 .ftl-gantt__cell--current { background: rgba(28,105,212,0.04); }
+.ftl-gantt__cell--locked { opacity: 0.3; pointer-events: none; }
 .ftl-gantt__cell-empty { color: var(--bmw-silver); font-size: var(--text-sm); text-align: center; align-self: center; }
 
 /* ── Cell row (one per I-Stufe) ── */
@@ -311,3 +434,74 @@
 .ftl-legend__item { display: flex; align-items: center; gap: var(--space-1); }
 .ftl-legend__swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
 .ftl-legend__label { font-size: var(--text-xs); font-weight: var(--font-semibold); color: var(--bmw-charcoal); }
+
+/* ══════════════════════════════════════════════════════
+   Bulk Edit Panel
+   ══════════════════════════════════════════════════════ */
+.ftl-bulk {
+    padding: var(--space-4); background: var(--bmw-white); border: 2px solid var(--bmw-blue);
+    border-radius: var(--border-radius-lg); box-shadow: var(--shadow-md);
+}
+.ftl-bulk__title {
+    font-size: var(--text-base); font-weight: var(--font-bold); color: var(--bmw-blue);
+    margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.05em;
+}
+.ftl-bulk__controls { display: flex; gap: var(--space-4); align-items: flex-start; flex-wrap: wrap; }
+.ftl-bulk__field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 140px; }
+.ftl-bulk__label { font-size: 0.7rem; font-weight: var(--font-bold); color: var(--bmw-charcoal); text-transform: uppercase; letter-spacing: 0.05em; }
+.ftl-bulk__select {
+    padding: var(--space-2) var(--space-3); font-size: var(--text-sm); font-family: var(--font-primary);
+    border: var(--border-light); border-radius: var(--border-radius); background: var(--bmw-off-white);
+    color: var(--bmw-black); outline: none; cursor: pointer;
+}
+.ftl-bulk__hvs-actions { display: flex; gap: var(--space-2); }
+.ftl-bulk__hvs-list {
+    display: flex; flex-wrap: wrap; gap: var(--space-2); max-height: 120px; overflow-y: auto;
+    padding: var(--space-2); background: var(--bmw-off-white); border-radius: var(--border-radius); border: var(--border-light);
+}
+.ftl-bulk__hvs-item {
+    display: flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: var(--font-semibold);
+    color: var(--bmw-charcoal); cursor: pointer; padding: 2px 6px; border-radius: 3px;
+    transition: background var(--transition-fast); white-space: nowrap;
+}
+.ftl-bulk__hvs-item:hover { background: var(--bmw-light-grey); }
+.ftl-bulk__hvs-item--disabled { opacity: 0.4; cursor: not-allowed; }
+.ftl-bulk__hvs-item input { margin: 0; cursor: pointer; }
+.ftl-bulk__hvs-muster { color: var(--bmw-mid-grey); font-weight: var(--font-regular); }
+.btn--disabled { opacity: 0.5; cursor: not-allowed; }
+.ftl-bulk__warn { font-size: var(--text-sm); color: var(--bmw-mid-grey); font-style: italic; padding: var(--space-2) 0; }
+.ftl-bulk__week-chips { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.ftl-bulk__week-chip {
+    padding: var(--space-2) var(--space-3); border: 2px solid var(--bmw-light-grey); border-radius: var(--border-radius);
+    background: var(--bmw-off-white); color: var(--bmw-charcoal); font-size: var(--text-xs); font-weight: var(--font-bold);
+    font-family: var(--font-mono); cursor: pointer; transition: all var(--transition-fast);
+}
+.ftl-bulk__week-chip:hover { border-color: var(--bmw-blue); color: var(--bmw-blue); }
+.ftl-bulk__week-chip--active { background: var(--bmw-blue); color: #fff; border-color: var(--bmw-blue); }
+.ftl-bulk__no-weeks { font-size: var(--text-xs); color: var(--bmw-mid-grey); font-style: italic; }
+
+/* Confirmation dialog */
+.ftl-bulk__confirm {
+    margin-top: var(--space-4); padding: var(--space-4);
+    background: var(--bmw-off-white); border: 2px solid var(--bmw-success);
+    border-radius: var(--border-radius-lg);
+}
+.ftl-bulk__confirm-title {
+    font-size: var(--text-sm); font-weight: var(--font-bold); color: var(--bmw-success);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3);
+}
+.ftl-bulk__confirm-summary { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.ftl-bulk__confirm-row { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.ftl-bulk__confirm-label { color: var(--bmw-mid-grey); font-weight: var(--font-semibold); min-width: 120px; }
+.ftl-bulk__confirm-hvs { display: flex; flex-wrap: wrap; gap: var(--space-2); padding-left: 120px; }
+.ftl-bulk__confirm-hvs-tag {
+    font-size: var(--text-xs); font-weight: var(--font-semibold); font-family: var(--font-mono);
+    padding: 2px 8px; background: var(--bmw-white); border: var(--border-light); border-radius: 3px;
+    color: var(--bmw-charcoal);
+}
+.ftl-bulk__confirm-actions { display: flex; gap: var(--space-3); justify-content: flex-end; }
+.ftl-bulk__preview {
+    margin-top: var(--space-3); padding: var(--space-2) var(--space-3);
+    background: var(--bmw-blue-light); border-radius: var(--border-radius);
+    font-size: var(--text-xs); color: var(--bmw-blue); font-weight: var(--font-semibold);
+}

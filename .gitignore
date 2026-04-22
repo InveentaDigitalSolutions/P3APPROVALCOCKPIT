@@ -15,6 +15,10 @@ dist-ssr
 # Excel data files (large binaries)
 *.xlsx
 
+# Dataverse source exports (large CSVs + .pqt mashup packages)
+docs/dataflow/
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

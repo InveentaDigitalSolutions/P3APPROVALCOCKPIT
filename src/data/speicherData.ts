@@ -1,26 +1,27 @@
 /**
- * Static HVS (Hochvoltspeicher) reference data.
- * Each entry represents a single HVS row in the overview grid.
- * Rows can be grouped into "Verbund" for joint processing (MIA, etc.).
+ * HVS (Hochvoltspeicher) reference data.
  *
- * The composite HVS-ID for Stücklisten is: Projektnummer + Musterphase + Bezeichnung
- * e.g. "B6GE0-001_VS1_D1_Muster"
+ * Source: Dataverse `crf4f_hvs` ⋈ `crf4f_wbs_type_mapping`. Current snapshot
+ * is committed as JSON under `./generated/dataverse/hvs.json`; refresh it by
+ * running `node scripts/dump-dataverse.mjs`.
  */
+
+import hvsJson from './generated/dataverse/hvs.json';
 
 export interface HvsEntry {
     /** Vehicle reference, e.g. "NA05" */
     brv: string;
-    /** HVS identifier (elektr_reichweite), e.g. "B6ROO" */
+    /** HVS identifier (derived from Speichertyp short code) */
     hvs: string;
     /** Speicher number, e.g. "P-114758" */
     speicher: string;
     /** WBS type classification, e.g. "VS_I" */
     wbsType: string;
-    /** Muster/prototype stage, e.g. "D 1", "C 1", "B 2" */
+    /** Muster/prototype stage, e.g. "D1.0" */
     muster: string;
-    /** Composite key: speicher-wbsType, e.g. "P-114758-VS_I" */
+    /** Composite key: speicher + "-" + wbsType */
     key: string;
-    /** Penthouse designation (derived from muster), e.g. "D1" */
+    /** Penthouse designation (from HVS table) */
     penthouse: string;
     /** Default Verbund group ID (null = ungrouped) */
     verbundId: string | null;
@@ -28,20 +29,41 @@ export interface HvsEntry {
     defaultActive: boolean;
 }
 
-/** Build penthouse string from muster (remove space) */
-function pth(muster: string): string {
-    return muster.replace(/\s+/g, '') || '';
+interface DvHvsJson {
+    key: string;
+    speichertyp: string;
+    pnummer: string;
+    wbsType: string;
+    muster: string;
+    penthouse: string;
+    bauphase: string;
+    monatjahr: string;
 }
 
-export const HVS_DATA: HvsEntry[] = [
-    { brv: 'NA05', hvs: 'B6ROO', speicher: 'P-114758', wbsType: 'VS_I', muster: 'D 1', key: 'P-114758-VS_I', penthouse: pth('D 1'), verbundId: null, defaultActive: true },
-    { brv: 'NA05', hvs: 'B6ROO', speicher: 'P-114758', wbsType: 'VS1_I', muster: 'D 1.2', key: 'P-114758-VS1_I', penthouse: pth('D 1.2'), verbundId: null, defaultActive: true },
-    { brv: 'NA05', hvs: 'B6ROO', speicher: 'P-114758', wbsType: 'EBG_I', muster: 'A 1', key: 'P-114758-EBG_I', penthouse: pth('A 1'), verbundId: null, defaultActive: false },
-    { brv: 'NA05', hvs: 'B6ROO', speicher: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', penthouse: pth('C 1'), verbundId: null, defaultActive: true },
-    { brv: 'NA05', hvs: 'B6ROO', speicher: 'P-114758', wbsType: 'BBG_II', muster: 'B 2', key: 'P-114758-BBG_II', penthouse: pth('B 2'), verbundId: null, defaultActive: true },
-    { brv: 'NA05', hvs: 'B6ROO', speicher: 'P-114758', wbsType: 'BBG_I', muster: 'B 1', key: 'P-114758-BBG_I', penthouse: pth('B 1'), verbundId: null, defaultActive: false },
-    { brv: 'NA05', hvs: 'B6ROO', speicher: 'P-114758', wbsType: 'KSP_I', muster: '', key: 'P-114758-KSP_I', penthouse: '', verbundId: null, defaultActive: false },
-];
+/** Derive the HVS short code from the Speichertyp string, e.g. "B6RO0 -001 | RR XL | HP-PH" → "B6RO0". */
+function deriveHvsCode(speichertyp: string): string {
+    if (!speichertyp) return '';
+    return speichertyp.split(/\s+/)[0] ?? '';
+}
+
+function buildHvsData(): HvsEntry[] {
+    const rows = hvsJson as DvHvsJson[];
+    return rows.map(r => ({
+        // TODO: BRV is hardcoded to NA05 per the current PQ filter (P-114758 → NA05).
+        // Source dynamically once multiple BRVs are in scope — see `crf4f_brv` table.
+        brv: 'NA05',
+        hvs: deriveHvsCode(r.speichertyp),
+        speicher: r.pnummer,
+        wbsType: r.wbsType,
+        muster: r.muster,
+        key: r.key,
+        penthouse: (r.penthouse ?? '').replace(/\s+/g, ''),
+        verbundId: null,
+        defaultActive: true,
+    }));
+}
+
+export const HVS_DATA: HvsEntry[] = buildHvsData();
 
 /** Unique BRV values */
 export const BRV_LIST = [...new Set(HVS_DATA.map(s => s.brv))];
@@ -68,8 +90,8 @@ export function buildMiaName(
     penthouse: string,
     level: string,
     istufe: string,
-    offset: string
+    offset: string,
 ): string {
     const pthDisplay = penthouse ? `${penthouse[0]}/${penthouse[0]}` : '—';
-    return `${hvs} ${pthDisplay} ${level} ${istufe.replace('NA05-', '')} ${offset}`;
+    return `${hvs} ${pthDisplay} ${level} ${istufe} ${offset}`;
 }

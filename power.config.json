@@ -1,14 +1,23 @@
 {
   "version": "1.0",
-  "appId": "0c51ffc7-8d07-4371-a08a-5459e16a1ccd",
+  "appId": "d913d290-2c06-455d-b1d3-71b2f9bb4cbf",
   "appDisplayName": "Freigabencockpit Next",
   "region": "prod",
-  "environmentId": "94283d50-c20e-e585-aade-876895af0d0d",
+  "environmentId": "b83cf532-5520-e124-ad5e-012e1e43d44d",
   "description": "BMW Software Approval Tracking Cockpit",
   "buildPath": "./dist",
   "buildEntryPoint": "index.html",
   "localAppUrl": "http://localhost:3000",
   "logoPath": "Default",
-  "connectionReferences": {},
+  "connectionReferences": {
+    "a95a4488-8004-4318-b34c-5ed3625bc6d8": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+      "displayName": "Microsoft Dataverse",
+      "dataSources": [
+        "commondataserviceforapps"
+      ],
+      "dataSets": {}
+    }
+  },
   "databaseReferences": {}
 }

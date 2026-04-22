@@ -13,20 +13,6 @@ interface NavCategory {
     items: NavItem[];
 }
 
-const OverviewIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-        <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-    </svg>
-);
-
-const SpeichertypIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-    </svg>
-);
-
 const TimelineIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="18" height="4" rx="1" /><rect x="5" y="12" width="14" height="4" rx="1" />
@@ -34,17 +20,11 @@ const TimelineIcon = () => (
     </svg>
 );
 
-const IStufeIcon = () => (
+const DatabaseIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
-        <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
-    </svg>
-);
-
-const BellIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-        <path d="M13.73 21a2 2 0 01-3.46 0" />
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M3 5v6c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+        <path d="M3 11v6c0 1.66 4 3 9 3s9-1.34 9-3v-6" />
     </svg>
 );
 
@@ -61,17 +41,13 @@ const NAV_CATEGORIES: NavCategory[] = [
     {
         heading: 'Hauptmenü',
         items: [
-            { to: '/', label: 'Übersicht', icon: <OverviewIcon /> },
             { to: '/freigabe-timeline', label: 'Freigabe Timeline', icon: <TimelineIcon /> },
-            { to: '/freigabe-bulk', label: 'Bulk Freigabe', icon: <TimelineIcon /> },
         ],
     },
     {
-        heading: 'Einstellungen',
+        heading: 'Daten',
         items: [
-            { to: '/speichertyp', label: 'Speichertyp', icon: <SpeichertypIcon /> },
-            { to: '/istufe', label: 'I-Stufe', icon: <IStufeIcon /> },
-            { to: '/benachrichtigungen', label: 'Benachrichtigungen', icon: <BellIcon /> },
+            { to: '/dataverse', label: 'Dataverse Admin', icon: <DatabaseIcon /> },
         ],
     },
 ];
@@ -89,10 +65,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
             {/* Brand */}
             <div
                 className="sidebar__brand"
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/freigabe-timeline')}
                 role="button"
                 tabIndex={0}
-                onKeyDown={e => e.key === 'Enter' && navigate('/')}
+                onKeyDown={e => e.key === 'Enter' && navigate('/freigabe-timeline')}
             >
                 <img
                     className="sidebar__logo"
@@ -119,7 +95,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                             <NavLink
                                 key={item.to}
                                 to={item.to}
-                                end={item.to === '/'}
                                 className={({ isActive }) =>
                                     `sidebar__link${isActive ? ' sidebar__link--active' : ''}`
                                 }

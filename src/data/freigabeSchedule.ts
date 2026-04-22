@@ -1,8 +1,12 @@
 /**
- * Freigabe schedule data — defines which approval level (Freigabelev)
- * each Speicher/WBS_TYPE combination must achieve by which week (START WEEK).
- * Source: Freigabe schedule table provided by user.
+ * Freigabe schedule data — SOLL approval milestones per (Speicher × WBS_TYPE).
+ *
+ * Source: Dataverse `crf4f_ip3_freigaben` (HVS ⋈ CDH_IP3 join). Current snapshot
+ * is committed as JSON under `./generated/dataverse/ip3_freigaben.json`;
+ * refresh by running `node scripts/dump-dataverse.mjs`.
  */
+
+import ip3FreigabenJson from './generated/dataverse/ip3_freigaben.json';
 
 export interface FreigabeScheduleEntry {
     bv: string;
@@ -15,53 +19,41 @@ export interface FreigabeScheduleEntry {
     startWeek: string;
 }
 
-export const FREIGABE_SCHEDULE: FreigabeScheduleEntry[] = [
-    // VS_I — D 1
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'VS_I', muster: 'D 1', key: 'P-114758-VS_I', freigabeLevel: 'L4', startWeek: '2027-16' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'VS_I', muster: 'D 1', key: 'P-114758-VS_I', freigabeLevel: 'RSTB', startWeek: '2026-46' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'VS_I', muster: 'D 1', key: 'P-114758-VS_I', freigabeLevel: 'L3', startWeek: '2026-51' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'VS_I', muster: 'D 1', key: 'P-114758-VS_I', freigabeLevel: 'L4', startWeek: '2027-16' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'VS_I', muster: 'D 1', key: 'P-114758-VS_I', freigabeLevel: 'RSTB', startWeek: '2026-46' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'VS_I', muster: 'D 1', key: 'P-114758-VS_I', freigabeLevel: 'L4', startWeek: '2027-16' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'VS_I', muster: 'D 1', key: 'P-114758-VS_I', freigabeLevel: 'RSTB', startWeek: '2026-46' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'VS_I', muster: 'D 1', key: 'P-114758-VS_I', freigabeLevel: 'L3', startWeek: '2026-51' },
-    // VS1_I
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'VS1_I', muster: '', key: 'P-114758-VS1_I', freigabeLevel: 'L2', startWeek: '2025-13' },
-    // EBG_I
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'EBG_I', muster: '', key: 'P-114758-EBG_I', freigabeLevel: 'RSTB', startWeek: '2025-13' },
-    // PVL_I — C 1
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'RSTB', startWeek: '2026-15' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L2', startWeek: '2026-21' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L1', startWeek: '2026-17' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L3', startWeek: '2026-27' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'RSTB', startWeek: '2026-15' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L2', startWeek: '2026-21' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L1', startWeek: '2026-17' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L3', startWeek: '2026-27' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'RSTB', startWeek: '2026-15' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L2', startWeek: '2026-21' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L1', startWeek: '2026-17' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L3', startWeek: '2026-27' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'RSTB', startWeek: '2026-15' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L2', startWeek: '2026-21' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L1', startWeek: '2026-17' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'PVL_I', muster: 'C 1', key: 'P-114758-PVL_I', freigabeLevel: 'L3', startWeek: '2026-27' },
-    // BBG_II — B 2
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'BBG_II', muster: 'B 2', key: 'P-114758-BBG_II', freigabeLevel: 'RSTB', startWeek: '2025-31' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'BBG_II', muster: 'B 2', key: 'P-114758-BBG_II', freigabeLevel: 'RSTB', startWeek: '2025-31' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'BBG_II', muster: 'B 2', key: 'P-114758-BBG_II', freigabeLevel: 'L2', startWeek: '2025-35' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'BBG_II', muster: 'B 2', key: 'P-114758-BBG_II', freigabeLevel: 'RSTB', startWeek: '2025-21' },
-    // BBG_I — B 1
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'BBG_I', muster: 'B 1', key: 'P-114758-BBG_I', freigabeLevel: 'L1', startWeek: '2025-27' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'BBG_I', muster: 'B 1', key: 'P-114758-BBG_I', freigabeLevel: 'RSTB', startWeek: '2025-21' },
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'BBG_I', muster: 'B 1', key: 'P-114758-BBG_I', freigabeLevel: 'L2', startWeek: '2025-27' },
-    // KSP_I
-    { bv: 'NA05', elektrReichweite: 'B6ROO', name: 'P-114758', wbsType: 'KSP_I', muster: '', key: 'P-114758-KSP_I', freigabeLevel: 'RSTB', startWeek: '2025-19' },
-];
+interface DvIp3FreigabenJson {
+    key: string;
+    sollFreigabe: string;
+    startWeek: string;
+    wbsType: string;
+    monatjahr: string;
+    sop: string;
+    penthouse: string;
+}
 
-/**
- * Deduplicated schedule: unique combinations of key + freigabeLevel + startWeek.
- */
+function buildSchedule(): FreigabeScheduleEntry[] {
+    const rows = ip3FreigabenJson as DvIp3FreigabenJson[];
+    return rows
+        .filter(r => r.key && r.sollFreigabe && r.startWeek)
+        .map(r => {
+            // key format: "P-114758-VS_I" → name = "P-114758", wbsType = suffix after first "-"
+            const firstDash = r.key.indexOf('-');
+            const name = firstDash > 0 ? r.key.slice(0, firstDash) : r.key;
+            return {
+                // TODO: BRV hardcoded — see TODO in speicherData.ts; applies the same way here
+                bv: 'NA05',
+                elektrReichweite: '',
+                name,
+                wbsType: r.wbsType,
+                muster: '',
+                key: r.key,
+                freigabeLevel: r.sollFreigabe,
+                startWeek: r.startWeek,
+            };
+        });
+}
+
+export const FREIGABE_SCHEDULE: FreigabeScheduleEntry[] = buildSchedule();
+
+/** Deduplicated schedule: unique combinations of key + freigabeLevel + startWeek. */
 export const FREIGABE_SCHEDULE_UNIQUE = (() => {
     const seen = new Set<string>();
     return FREIGABE_SCHEDULE.filter(e => {

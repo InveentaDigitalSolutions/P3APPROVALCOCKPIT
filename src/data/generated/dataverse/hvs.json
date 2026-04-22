@@ -1,0 +1,68 @@
+[
+  {
+    "_id": "40f4a989-4d3e-f111-88b4-7ced8d425299",
+    "key": "P-114758-PVL_I",
+    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "PVL_I",
+    "muster": "C1.0",
+    "penthouse": "D-HP",
+    "bauphase": "PVL3.1/VS0 &VS1",
+    "monatjahr": "Aug-27"
+  },
+  {
+    "_id": "3ff4a989-4d3e-f111-88b4-7ced8d425299",
+    "key": "P-114758-BBG_I",
+    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "BBG_I",
+    "muster": "B1.0",
+    "penthouse": "C2-HP",
+    "bauphase": "BBG2.1",
+    "monatjahr": "Aug-27"
+  },
+  {
+    "_id": "58f4a088-4d3e-f111-88b4-7ced8d425f64",
+    "key": "P-114758-VS_I",
+    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "VS_I",
+    "muster": "D1.0",
+    "penthouse": "D-HP Cost Down",
+    "bauphase": "VS4.1 & VS2 (HEA)",
+    "monatjahr": "Aug-27"
+  },
+  {
+    "_id": "eb31c388-4d3e-f111-88b4-6045bdddeeea",
+    "key": "P-114758-EBG_I",
+    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "EBG_I",
+    "muster": "A1.0",
+    "penthouse": "C09-HP",
+    "bauphase": "EGB1.1",
+    "monatjahr": "Aug-27"
+  },
+  {
+    "_id": "eaa0f88a-4d3e-f111-88b4-7ced8d425ec9",
+    "key": "P-114758-BBG_II",
+    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "BBG_II",
+    "muster": "B2.0",
+    "penthouse": "C2-HP",
+    "bauphase": "BBG2.1",
+    "monatjahr": "Aug-27"
+  },
+  {
+    "_id": "b96b8487-4d3e-f111-88b4-7ced8d749023",
+    "key": "P-114758-VS1_I",
+    "speichertyp": "B6RO0 -002 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "VS1_I",
+    "muster": "D1.2",
+    "penthouse": "D-HP Cost Down",
+    "bauphase": "VS4.2",
+    "monatjahr": "Aug-27"
+  }
+]

@@ -1,0 +1,237 @@
+.dv-admin {
+    padding: 24px 32px;
+    font-size: 13px;
+    color: #1a1a1a;
+}
+
+.dv-admin__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.dv-admin__title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.dv-admin__controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.dv-admin__select {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 12px;
+    padding: 6px 10px;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    background: #fff;
+    min-width: 280px;
+}
+
+.dv-admin__btn {
+    padding: 6px 12px;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    color: #1a1a1a;
+}
+
+.dv-admin__btn:hover:not(:disabled) {
+    background: #f5f5f5;
+}
+
+.dv-admin__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dv-admin__btn--primary {
+    background: #0078d4;
+    color: #fff;
+    border-color: #0078d4;
+}
+
+.dv-admin__btn--primary:hover:not(:disabled) {
+    background: #106ebe;
+}
+
+.dv-admin__btn--sm {
+    padding: 4px 8px;
+    font-size: 11px;
+    margin-right: 4px;
+}
+
+.dv-admin__btn--danger {
+    color: #c62828;
+    border-color: #e0a5a5;
+}
+
+.dv-admin__btn--danger:hover:not(:disabled) {
+    background: #fdecea;
+}
+
+.dv-admin__error {
+    padding: 10px 14px;
+    background: #fdecea;
+    border: 1px solid #e0a5a5;
+    border-radius: 4px;
+    color: #c62828;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 12px;
+}
+
+.dv-admin__count {
+    margin-bottom: 8px;
+    color: #666;
+    font-size: 12px;
+}
+
+.dv-admin__cols {
+    margin-left: 8px;
+    color: #888;
+}
+
+.dv-admin__table-wrap {
+    overflow: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fff;
+    max-height: calc(100vh - 220px);
+}
+
+.dv-admin__table {
+    border-collapse: collapse;
+    font-size: 12px;
+    width: max-content;
+    min-width: 100%;
+}
+
+.dv-admin__table th,
+.dv-admin__table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    border-right: 1px solid #f5f5f5;
+    text-align: left;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dv-admin__table th {
+    background: #fafafa;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+}
+
+.dv-admin__table tbody tr:hover {
+    background: #f9fbfd;
+}
+
+.dv-admin__actions-col {
+    position: sticky;
+    right: 0;
+    background: #fff;
+    border-left: 1px solid #e0e0e0;
+    white-space: nowrap;
+}
+
+.dv-admin__table thead .dv-admin__actions-col {
+    background: #fafafa;
+}
+
+.dv-admin__empty {
+    text-align: center;
+    color: #888;
+    padding: 32px;
+}
+
+.dv-admin__modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.dv-admin__modal {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    min-width: 480px;
+    max-width: 80vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.dv-admin__modal h2 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+}
+
+.dv-admin__modal-subtitle {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 16px;
+}
+
+.dv-admin__fields {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.dv-admin__field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.dv-admin__field-label {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    color: #555;
+}
+
+.dv-admin__input {
+    padding: 6px 10px;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.dv-admin__input:focus {
+    outline: 2px solid #0078d4;
+    outline-offset: -1px;
+    border-color: #0078d4;
+}
+
+.dv-admin__modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+}

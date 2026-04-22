@@ -77,6 +77,51 @@ export interface FreigabeRecord {
     confirmedLevel: FreigabeLevel;
 }
 
+/* ── Speichertyp master data record ── */
+export interface SpeichertypRecord {
+    id: string;
+    speichertyp: string;   // e.g. "BZGG0-001"
+    speicher: string;       // e.g. "C0.8"
+    hvsCluster: string;     // e.g. "NCARKF1"
+    penthouse: string;      // e.g. "C0.9"
+    bauphase: string;       // e.g. "N/A", "VS1.0 & VS0.2 CHN"
+}
+
+/* ── I-Stufe master data record ── */
+export interface IStufeRecord {
+    id: string;
+    iStufe: string;         // e.g. "460", "480"
+    leadStufe: string;      // e.g. "26-07"
+    sop: string;            // e.g. "26-07"
+    atsDate: string | null; // ATS date (ISO string)
+    sabDate: string | null; // SAB date (ISO string)
+}
+
+/* ── Freigabe Level master data record ── */
+export interface FreigabeLevelRecord {
+    id: string;
+    name: string;           // e.g. "L1 Erstfreigabe"
+    rank: number;           // ordering / severity (higher = more approved)
+    category: string;       // grouping: "RTSB", "X", "L1", "L2", "L3", "L4", "Sonstige"
+    color: string;          // hex color for badge display
+    bgColor: string;        // hex background color for badge
+}
+
+/* ── I-Stufe → HVS/Penthouse fixed assignment ──
+   Once a software maturity (I-Stufe) is locked to an HVS + Penthouse,
+   all subsequent approvals for that I-Stufe automatically target this HVS. */
+export interface IStufeHvsZuordnung {
+    id: string;
+    /** SE_TERMIN delivery cycle, e.g. "26-07", "26-11" */
+    seTermin: string;
+    /** HVS entry key, e.g. "P-114758-VS_I" */
+    hvsKey: string;
+    /** When this assignment was fixed (ISO date) */
+    fixedAt: string;
+    /** Optional note */
+    note: string;
+}
+
 /** Parsed calendar week info */
 export interface KalenderwocheInfo {
     /** Display label, e.g. "KW 10 / 2026" */

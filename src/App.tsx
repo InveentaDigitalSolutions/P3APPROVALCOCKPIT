@@ -2,12 +2,8 @@ import { useCallback, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Sidebar } from './components/Sidebar';
-import { OverviewPage } from './pages/OverviewPage';
-import { StammdatenPage } from './pages/StammdatenPage';
-import { IStufePage } from './pages/IStufePage';
-import { BenachrichtigungenPage } from './pages/BenachrichtigungenPage';
 import { FreigabeTimelinePage } from './pages/FreigabeTimelinePage';
-import { FreigabeBulkPage } from './pages/FreigabeBulkPage';
+import { DataverseAdminPage } from './pages/DataverseAdminPage';
 import './App.css';
 
 function App() {
@@ -24,13 +20,9 @@ function App() {
             <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
             <main className="app-content">
               <Routes>
-                <Route path="/" element={<OverviewPage />} />
-                <Route path="/speichertyp" element={<StammdatenPage />} />
-                <Route path="/istufe" element={<IStufePage />} />
                 <Route path="/freigabe-timeline" element={<FreigabeTimelinePage />} />
-                <Route path="/freigabe-bulk" element={<FreigabeBulkPage />} />
-                <Route path="/benachrichtigungen" element={<BenachrichtigungenPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="/dataverse" element={<DataverseAdminPage />} />
+                <Route path="*" element={<Navigate to="/freigabe-timeline" replace />} />
               </Routes>
             </main>
           </div>
