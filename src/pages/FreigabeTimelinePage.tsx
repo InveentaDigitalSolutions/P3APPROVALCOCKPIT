@@ -1,11 +1,11 @@
-import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { getActiveIStufen, getOffsetForWeek, weekToIndex, ISTUFE_MASTERS } from '../data/istufeData';
 import type { IStufeMaster } from '../data/istufeData';
 import { HVS_DATA } from '../data/speicherData';
 import { FREIGABE_SCHEDULE_UNIQUE } from '../data/freigabeSchedule';
-import { TICKETS_BY_YEARWEEK } from '../data/plannedComponentApprovals';
+import { TICKETS_BY_YEARWEEK, PENTHOUSE_TICKETS } from '../data/plannedComponentApprovals';
 import type { PenthouseTicket } from '../data/plannedComponentApprovals';
-import { VERBUND_TICKETS_BY_YEARWEEK } from '../data/verbundfreigaben';
+import { VERBUND_TICKETS_BY_YEARWEEK, VERBUND_TICKETS } from '../data/verbundfreigaben';
 import type { VerbundTicket } from '../data/verbundfreigaben';
 import {
     getISOWeek,
@@ -213,83 +213,132 @@ function ticketColor(name: string): string {
     return '#6F6F6F';
 }
 
-const PenthouseTicketBadge: React.FC<{
-    ticket: PenthouseTicket;
-    onClick: (t: PenthouseTicket) => void;
-    isActive: boolean;
-}> = ({ ticket, onClick, isActive }) => (
-    <button
-        type="button"
-        className={`ftl-ticket-badge${isActive ? ' ftl-ticket-badge--active' : ''}`}
-        style={{ backgroundColor: ticketColor(ticket.name) }}
-        onClick={e => { e.stopPropagation(); onClick(ticket); }}
-        title={`${ticket.jiraKey} · ${ticket.name}`}
-    >
-        {ticket.name || '?'}
-    </button>
-);
+type PopoverPlacement = 'center' | 'left' | 'right';
 
-const VerbundTicketBadge: React.FC<{
-    ticket: VerbundTicket;
-    onClick: (t: VerbundTicket) => void;
-    isActive: boolean;
-}> = ({ ticket, onClick, isActive }) => (
-    <button
-        type="button"
-        className={`ftl-ticket-badge ftl-ticket-badge--verbund${isActive ? ' ftl-ticket-badge--active' : ''}`}
-        style={{ backgroundColor: ticketColor(ticket.name) }}
-        onClick={e => { e.stopPropagation(); onClick(ticket); }}
-        title={`${ticket.collapseId} · ${ticket.name}`}
-    >
-        {ticket.name || '?'}
-    </button>
-);
+function usePopoverPlacement(active: boolean, wrapperRef: React.RefObject<HTMLElement | null>): PopoverPlacement {
+    const [placement, setPlacement] = useState<PopoverPlacement>('center');
+    useLayoutEffect(() => {
+        if (!active || !wrapperRef.current) return;
+        const POPOVER_WIDTH = 340;
+        const MARGIN = 16;
+        const compute = () => {
+            if (!wrapperRef.current) return;
+            const rect = wrapperRef.current.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const vpWidth = window.innerWidth;
+            if (centerX + POPOVER_WIDTH / 2 + MARGIN > vpWidth) setPlacement('right');
+            else if (centerX - POPOVER_WIDTH / 2 < MARGIN) setPlacement('left');
+            else setPlacement('center');
+        };
+        compute();
+        window.addEventListener('resize', compute);
+        return () => window.removeEventListener('resize', compute);
+    }, [active, wrapperRef]);
+    return placement;
+}
 
-const TicketDetailDrawer: React.FC<{
-    selection: SelectedTicket | null;
+const TicketPopoverContent: React.FC<{
+    selection: SelectedTicket;
     onClose: () => void;
-}> = ({ selection, onClose }) => {
-    useEffect(() => {
-        if (!selection) return;
-        const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-        document.addEventListener('keydown', h);
-        return () => document.removeEventListener('keydown', h);
-    }, [selection, onClose]);
-
-    if (!selection) return null;
-
+    placement: PopoverPlacement;
+}> = ({ selection, onClose, placement }) => {
     const isPenthouse = selection.kind === 'penthouse';
     const name = selection.ticket.name;
     const headerColor = ticketColor(name);
-
     return (
-        <>
-            <div className="ftl-drawer-backdrop" onClick={onClose} />
-            <aside className="ftl-drawer" role="dialog" aria-label="Ticket details">
-                <header className="ftl-drawer__header" style={{ backgroundColor: headerColor }}>
-                    <div>
-                        <div className="ftl-drawer__kicker">
-                            {isPenthouse ? 'Penthouse-Ticket' : 'Verbund-Ticket (Swap)'}
-                        </div>
-                        <h2 className="ftl-drawer__title">
-                            {isPenthouse ? selection.ticket.jiraKey : selection.ticket.collapseId}
-                        </h2>
+        <div className={`ftl-ticket-popover ftl-ticket-popover--${placement}`} role="dialog" onClick={e => e.stopPropagation()}>
+            <header className="ftl-ticket-popover__header" style={{ backgroundColor: headerColor }}>
+                <div>
+                    <div className="ftl-ticket-popover__kicker">
+                        {isPenthouse ? 'Penthouse-Ticket' : 'Verbund-Ticket (Swap)'}
                     </div>
-                    <button className="ftl-drawer__close" onClick={onClose} aria-label="Close">×</button>
-                </header>
-                <div className="ftl-drawer__body">
-                    <div className="ftl-drawer__row">
-                        <span className="ftl-drawer__label">Name</span>
-                        <span className="ftl-drawer__value">{name || '—'}</span>
+                    <div className="ftl-ticket-popover__title">
+                        {isPenthouse ? selection.ticket.jiraKey : selection.ticket.collapseId}
                     </div>
-                    {isPenthouse ? (
-                        <PenthouseDrawerFields ticket={selection.ticket} />
-                    ) : (
-                        <VerbundDrawerFields ticket={selection.ticket} />
-                    )}
                 </div>
-            </aside>
-        </>
+                <button className="ftl-ticket-popover__close" onClick={onClose} aria-label="Close">×</button>
+            </header>
+            <div className="ftl-ticket-popover__body">
+                <div className="ftl-drawer__row">
+                    <span className="ftl-drawer__label">Name</span>
+                    <span className="ftl-drawer__value">{name || '—'}</span>
+                </div>
+                {isPenthouse
+                    ? <PenthouseDrawerFields ticket={selection.ticket} />
+                    : <VerbundDrawerFields ticket={selection.ticket} />}
+            </div>
+        </div>
+    );
+};
+
+function useClickOutsideAndEscape(active: boolean, wrapperRef: React.RefObject<HTMLElement | null>, onClose: () => void) {
+    const onCloseRef = useRef(onClose);
+    useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+    useEffect(() => {
+        if (!active) return;
+        const handleMouse = (e: MouseEvent) => {
+            if (wrapperRef.current?.contains(e.target as Node)) return;
+            onCloseRef.current();
+        };
+        const handleKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onCloseRef.current();
+        };
+        document.addEventListener('mousedown', handleMouse);
+        document.addEventListener('keydown', handleKey);
+        return () => {
+            document.removeEventListener('mousedown', handleMouse);
+            document.removeEventListener('keydown', handleKey);
+        };
+    }, [active, wrapperRef]);
+}
+
+const PenthouseTicketBadge: React.FC<{
+    ticket: PenthouseTicket;
+    onOpen: (t: PenthouseTicket) => void;
+    onClose: () => void;
+    isActive: boolean;
+}> = ({ ticket, onOpen, onClose, isActive }) => {
+    const wrapperRef = useRef<HTMLSpanElement>(null);
+    useClickOutsideAndEscape(isActive, wrapperRef, onClose);
+    const placement = usePopoverPlacement(isActive, wrapperRef);
+    return (
+        <span ref={wrapperRef} className="ftl-ticket-wrapper">
+            <button
+                type="button"
+                className={`ftl-ticket-badge${isActive ? ' ftl-ticket-badge--active' : ''}`}
+                style={{ backgroundColor: ticketColor(ticket.name) }}
+                onClick={e => { e.stopPropagation(); isActive ? onClose() : onOpen(ticket); }}
+                title={`${ticket.jiraKey} · ${ticket.name}`}
+            >
+                {ticket.name || '?'}
+            </button>
+            {isActive && <TicketPopoverContent selection={{ kind: 'penthouse', ticket }} onClose={onClose} placement={placement} />}
+        </span>
+    );
+};
+
+const VerbundTicketBadge: React.FC<{
+    ticket: VerbundTicket;
+    onOpen: (t: VerbundTicket) => void;
+    onClose: () => void;
+    isActive: boolean;
+}> = ({ ticket, onOpen, onClose, isActive }) => {
+    const wrapperRef = useRef<HTMLSpanElement>(null);
+    useClickOutsideAndEscape(isActive, wrapperRef, onClose);
+    const placement = usePopoverPlacement(isActive, wrapperRef);
+    return (
+        <span ref={wrapperRef} className="ftl-ticket-wrapper">
+            <button
+                type="button"
+                className={`ftl-ticket-badge ftl-ticket-badge--verbund${isActive ? ' ftl-ticket-badge--active' : ''}`}
+                style={{ backgroundColor: ticketColor(ticket.name) }}
+                onClick={e => { e.stopPropagation(); isActive ? onClose() : onOpen(ticket); }}
+                title={`${ticket.collapseId} · ${ticket.name}`}
+            >
+                {ticket.name || '?'}
+            </button>
+            {isActive && <TicketPopoverContent selection={{ kind: 'verbund', ticket }} onClose={onClose} placement={placement} />}
+        </span>
     );
 };
 
@@ -378,12 +427,14 @@ const EMPTY_FILTERS: Filters = { wbsType: '', muster: '', penthouse: '', search:
 
 const FilterPanel: React.FC<{
     filters: Filters; onChange: (f: Filters) => void;
+    onReset?: () => void;
     hvsCount: number; istufeCount: number;
-}> = ({ filters, onChange, hvsCount, istufeCount }) => {
+}> = ({ filters, onChange, onReset, hvsCount, istufeCount }) => {
     const wbsOptions = [...new Set(HVS_DATA.map(h => h.wbsType))];
     const musterOptions = [...new Set(HVS_DATA.map(h => h.muster).filter(Boolean))];
     const penthouseOptions = [...new Set(HVS_DATA.map(h => h.penthouse).filter(Boolean))].sort();
     const set = (k: keyof Filters, v: string) => onChange({ ...filters, [k]: v });
+    const handleReset = () => { onChange(EMPTY_FILTERS); onReset?.(); };
 
     return (
         <div className="ftl-filters">
@@ -403,7 +454,7 @@ const FilterPanel: React.FC<{
                     {musterOptions.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
                 {Object.values(filters).some(Boolean) && (
-                    <button className="btn btn--ghost btn--sm" onClick={() => onChange(EMPTY_FILTERS)}>Filter zurücksetzen</button>
+                    <button className="btn btn--ghost btn--sm" onClick={handleReset}>Filter zurücksetzen</button>
                 )}
             </div>
             <div className="ftl-filters__stats">
@@ -425,6 +476,40 @@ export const FreigabeTimelinePage: React.FC = () => {
 
     /* ── Week navigation ── */
     const [weekOffset, setWeekOffset] = useState(0);
+
+    /* ── Data refresh (dev-only: POSTs to /__dv__/refresh) ──
+       The dump script runs `pac org fetch` per (table × attr); expect ~2–3 min. */
+    const [refreshState, setRefreshState] = useState<'idle' | 'loading' | 'error'>('idle');
+    const [refreshError, setRefreshError] = useState<string>('');
+    const [refreshStartedAt, setRefreshStartedAt] = useState<number>(0);
+    const [refreshElapsed, setRefreshElapsed] = useState<number>(0);
+
+    useEffect(() => {
+        if (refreshState !== 'loading') return;
+        const t = setInterval(() => setRefreshElapsed(Math.floor((Date.now() - refreshStartedAt) / 1000)), 1000);
+        return () => clearInterval(t);
+    }, [refreshState, refreshStartedAt]);
+
+    const handleRefresh = useCallback(async () => {
+        if (refreshState === 'loading') return;
+        setRefreshState('loading');
+        setRefreshError('');
+        setRefreshStartedAt(Date.now());
+        setRefreshElapsed(0);
+        try {
+            // No client timeout — pac dump can take 2–3 minutes
+            const res = await fetch('/__dv__/refresh', { method: 'POST' });
+            const body = await res.json().catch(() => ({}));
+            if (!res.ok || !body.ok) {
+                throw new Error(body.error || `HTTP ${res.status}`);
+            }
+            // Reload to re-evaluate the bundled JSON imports against the refreshed files
+            window.location.reload();
+        } catch (e) {
+            setRefreshState('error');
+            setRefreshError(e instanceof Error ? e.message : String(e));
+        }
+    }, [refreshState]);
     const centerDate = useMemo(() => {
         const d = getMonday(currentWeek, currentYear);
         d.setUTCDate(d.getUTCDate() + weekOffset * 7);
@@ -465,13 +550,32 @@ export const FreigabeTimelinePage: React.FC = () => {
 
     const istufeColors = useMemo(() => buildIstufeColorMap(allVisibleIStufen), [allVisibleIStufen]);
 
-    /* ── Selected I-Stufe for editing ── */
-    const [selectedIstufe, setSelectedIstufe] = useState<string | null>(null);
+    /* ── Bulk edit: SE_TERMIN + Reifegrad → derive ISTUFE key ── */
+    const [bulkSeTermin, setBulkSeTermin] = useState<string>('');
+    const [bulkReife, setBulkReife] = useState<string>('');
 
-    // Auto-select first I-Stufe if none selected
-    const effectiveSelected = selectedIstufe && allVisibleIStufen.some(m => m.istufe === selectedIstufe)
-        ? selectedIstufe
-        : null;
+    const seTerminOptions = useMemo(() => {
+        return [...new Set(ISTUFE_MASTERS.map(m => m.seTermin))].sort();
+    }, []);
+
+    const reifeOptions = useMemo(() => {
+        if (!bulkSeTermin) return [] as number[];
+        const set = new Set<number>();
+        for (const m of ISTUFE_MASTERS) if (m.seTermin === bulkSeTermin) set.add(m.reife);
+        return [...set].sort((a, b) => b - a);
+    }, [bulkSeTermin]);
+
+    const effectiveSelected = useMemo<string | null>(() => {
+        if (!bulkSeTermin || !bulkReife) return null;
+        const key = `${bulkSeTermin}-${bulkReife}`;
+        return ISTUFE_MASTERS.some(m => m.istufe === key) ? key : null;
+    }, [bulkSeTermin, bulkReife]);
+
+    const selectIstufe = useCallback((istufe: string | null) => {
+        if (!istufe) { setBulkSeTermin(''); setBulkReife(''); return; }
+        const master = ISTUFE_MASTERS.find(m => m.istufe === istufe);
+        if (master) { setBulkSeTermin(master.seTermin); setBulkReife(String(master.reife)); }
+    }, []);
 
     /* ── Filters ── */
     const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -639,14 +743,30 @@ export const FreigabeTimelinePage: React.FC = () => {
     }
 
     /* ── Bulk Edit state ── */
-    const [bulkWeek, setBulkWeek] = useState<string>('');
-    const [bulkOffset, setBulkOffset] = useState<string>('');
     const [bulkLevel, setBulkLevel] = useState<string>('');
     const [bulkHvsSelection, setBulkHvsSelection] = useState<Set<string>>(new Set());
+    const [bulkWeeks, setBulkWeeks] = useState<Set<string>>(new Set());
     const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+
+    const resetBulk = useCallback(() => {
+        setBulkSeTermin('');
+        setBulkReife('');
+        setBulkLevel('');
+        setBulkHvsSelection(new Set());
+        setBulkWeeks(new Set());
+    }, []);
+
+    const toggleBulkWeek = useCallback((wk: string) => {
+        setBulkWeeks(prev => {
+            const next = new Set(prev);
+            if (next.has(wk)) next.delete(wk); else next.add(wk);
+            return next;
+        });
+    }, []);
 
     /* ── Ticket detail panel ── */
     const [selectedTicket, setSelectedTicket] = useState<SelectedTicket | null>(null);
+    const closeTicket = useCallback(() => setSelectedTicket(null), []);
 
     const toggleBulkHvs = useCallback((key: string) => {
         setBulkHvsSelection(prev => {
@@ -664,37 +784,61 @@ export const FreigabeTimelinePage: React.FC = () => {
         setBulkHvsSelection(new Set());
     }, []);
 
-    const applyBulk = useCallback(() => {
-        if (!effectiveSelected || !bulkWeek || !bulkLevel) return;
-
-        const wkIdx = weekToIndex(bulkWeek);
-        // Find active I-Stufen in target week for group cascade
-        const activeInWeek = allVisibleIStufen.filter(m => {
-            return weekToIndex(m.atsWeek) <= wkIdx && wkIdx <= weekToIndex(m.sabWeek);
+    /** Weeks in the current view where the selected ISTUFE is active */
+    const availableWeeks = useMemo(() => {
+        if (!effectiveSelected) return [] as string[];
+        const master = ISTUFE_MASTERS.find(m => m.istufe === effectiveSelected);
+        if (!master) return [];
+        const atsIdx = weekToIndex(master.atsWeek);
+        const sabIdx = weekToIndex(master.sabWeek);
+        return weekKeys.filter(wk => {
+            const idx = weekToIndex(wk);
+            return atsIdx <= idx && idx <= sabIdx;
         });
+    }, [effectiveSelected, weekKeys]);
+
+    /** Auto-select all available weeks whenever the set of available weeks changes */
+    useEffect(() => {
+        setBulkWeeks(new Set(availableWeeks));
+    }, [availableWeeks]);
+
+    /** Weeks that will actually be written: intersection of user-selected and available */
+    const affectedWeeks = useMemo(() => {
+        return availableWeeks.filter(wk => bulkWeeks.has(wk));
+    }, [availableWeeks, bulkWeeks]);
+
+    const applyBulk = useCallback(() => {
+        if (!effectiveSelected || !bulkLevel || affectedWeeks.length === 0) return;
 
         setIstStand(prev => {
             const next = { ...prev };
-            for (const hvsKey of bulkHvsSelection) {
-                // Set for the selected I-Stufe
-                next[`${effectiveSelected}|${bulkWeek}|${hvsKey}`] = bulkLevel;
-                // Cascade to group members
-                const rank: number = istufeRank[`${bulkWeek}|${effectiveSelected}`] ?? (activeInWeek.findIndex(m => m.istufe === effectiveSelected) + 1);
+            for (const weekKey of affectedWeeks) {
+                const wkIdx = weekToIndex(weekKey);
+                const activeInWeek = allVisibleIStufen.filter(m => {
+                    return weekToIndex(m.atsWeek) <= wkIdx && wkIdx <= weekToIndex(m.sabWeek);
+                });
+                const rank: number = istufeRank[`${weekKey}|${effectiveSelected}`]
+                    ?? (activeInWeek.findIndex(m => m.istufe === effectiveSelected) + 1);
                 const groupMembers: string[] = activeInWeek
-                    .filter(m => (istufeRank[`${bulkWeek}|${m.istufe}`] ?? (activeInWeek.findIndex(x => x.istufe === m.istufe) + 1)) === rank)
+                    .filter(m => (istufeRank[`${weekKey}|${m.istufe}`]
+                        ?? (activeInWeek.findIndex(x => x.istufe === m.istufe) + 1)) === rank)
                     .map(m => m.istufe);
-                for (const member of groupMembers) {
-                    if (member !== effectiveSelected) {
-                        next[`${member}|${bulkWeek}|${hvsKey}`] = bulkLevel;
+
+                for (const hvsKey of bulkHvsSelection) {
+                    next[`${effectiveSelected}|${weekKey}|${hvsKey}`] = bulkLevel;
+                    for (const member of groupMembers) {
+                        if (member !== effectiveSelected) {
+                            next[`${member}|${weekKey}|${hvsKey}`] = bulkLevel;
+                        }
                     }
                 }
             }
             return next;
         });
-    }, [effectiveSelected, bulkWeek, bulkLevel, bulkHvsSelection, allVisibleIStufen, istufeRank]);
+    }, [effectiveSelected, bulkLevel, bulkHvsSelection, affectedWeeks, allVisibleIStufen, istufeRank]);
 
     const bulkCount = bulkHvsSelection.size;
-    const bulkReady = !!effectiveSelected && !!bulkWeek && !!bulkOffset && !!bulkLevel && bulkCount > 0;
+    const bulkReady = !!effectiveSelected && !!bulkLevel && bulkCount > 0 && affectedWeeks.length > 0;
 
     /* ══════════════════════════════════════════════════
        RENDER
@@ -707,10 +851,33 @@ export const FreigabeTimelinePage: React.FC = () => {
                 <div>
                     <h1 className="ftl-page__title">Freigabe Timeline</h1>
                     <p className="ftl-page__subtitle">
-                        Hochvoltspeicher-Freigaben &middot; Fahrzeug <strong>NA05</strong>
+                        Hochvoltspeicher-Freigaben
                     </p>
                 </div>
                 <div className="ftl-nav">
+                    <button className={`ftl-refresh-btn${refreshState === 'loading' ? ' ftl-refresh-btn--loading' : ''}${refreshState === 'error' ? ' ftl-refresh-btn--error' : ''}`}
+                        onClick={handleRefresh}
+                        disabled={refreshState === 'loading'}
+                        title={refreshState === 'error'
+                            ? `Fehler: ${refreshError}`
+                            : 'Lädt aktuelle Daten aus Dataverse (~2–3 min)'}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            className={refreshState === 'loading' ? 'ftl-refresh-btn__spin' : ''}
+                            aria-hidden="true">
+                            <polyline points="23 4 23 10 17 10" />
+                            <polyline points="1 20 1 14 7 14" />
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                        </svg>
+                        <span>
+                            {refreshState === 'loading'
+                                ? `Lädt… ${refreshElapsed}s`
+                                : refreshState === 'error'
+                                    ? 'Fehlgeschlagen'
+                                    : 'Aktualisieren'}
+                        </span>
+                    </button>
+                    <span className="ftl-nav__sep" aria-hidden="true" />
                     <button className="btn btn--ghost btn--sm" onClick={() => setWeekOffset(o => o - 3)}>« 3</button>
                     <button className="btn btn--ghost btn--sm" onClick={() => setWeekOffset(o => o - 1)}>‹</button>
                     <button className="btn btn--primary btn--sm" onClick={() => setWeekOffset(0)}>Heute</button>
@@ -719,130 +886,136 @@ export const FreigabeTimelinePage: React.FC = () => {
                 </div>
             </div>
 
-            {/* ── I-Stufe Selector Bar ── */}
-            <div className="ftl-selector">
-                <div className="ftl-selector__label">
-                    Softwarestand auswählen zum Bearbeiten:
-                </div>
-                <div className="ftl-selector__chips">
-                    {allVisibleIStufen.length === 0 && (
-                        <span className="ftl-selector__empty">Keine aktiven Softwarestände in diesem Zeitfenster</span>
-                    )}
-                    {allVisibleIStufen.map(m => {
-                        const c = istufeColors.get(m.istufe)!;
-                        const isSelected = effectiveSelected === m.istufe;
-                        return (
-                            <button
-                                key={m.istufe}
-                                className={`ftl-selector__chip${isSelected ? ' ftl-selector__chip--selected' : ''}`}
-                                style={{
-                                    backgroundColor: isSelected ? c.bar : 'transparent',
-                                    color: isSelected ? '#fff' : c.bar,
-                                    borderColor: c.bar,
-                                }}
-                                onClick={() => setSelectedIstufe(isSelected ? null : m.istufe)}
-                                title={`${m.istufe}\nReife: ${m.reife}\nATS: ${m.ats}\nSAB: ${m.sab}\n\nKlicken zum ${isSelected ? 'Abwählen' : 'Auswählen'}`}
-                            >
-                                <span className="ftl-selector__chip-name">{m.istufe}</span>
-                                <span className="ftl-selector__chip-reife">Reife {m.reife}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-                {effectiveSelected && (
-                    <div className="ftl-selector__hint">
-                        Bearbeitung aktiv für <strong>{effectiveSelected}</strong> — Freigaben werden automatisch auf alle niedrigeren Reife-Stufen übertragen.
-                    </div>
-                )}
-            </div>
-
             {/* ── Bulk Edit Panel ── */}
             <div className="ftl-bulk">
-                <div className="ftl-bulk__title">Bulk-Freigabe</div>
-                {!effectiveSelected ? (
-                    <div className="ftl-bulk__warn">Bitte zuerst einen Softwarestand oben auswählen</div>
-                ) : (<>
-                <div className="ftl-bulk__controls">
-                    {/* Step 1: Week — auto-detected from selected Softwarestand */}
-                    <div className="ftl-bulk__field">
-                        <label className="ftl-bulk__label">Woche</label>
-                        <div className="ftl-bulk__week-chips">
-                            {(() => {
-                                const selectedMaster = allVisibleIStufen.find(m => m.istufe === effectiveSelected);
-                                const availableWeeks = weekKeys.filter(wk => {
-                                    if (!selectedMaster) return false;
-                                    const idx = weekToIndex(wk);
-                                    return weekToIndex(selectedMaster.atsWeek) <= idx && idx <= weekToIndex(selectedMaster.sabWeek);
-                                });
-                                // Also include weeks with manual entries for this Softwarestand
-                                const manualWeeks = weekKeys.filter(wk =>
-                                    manualEntries.some(e => e.weekKey === wk && e.istufe === effectiveSelected) && !availableWeeks.includes(wk)
-                                );
-                                const allWeeks = [...availableWeeks, ...manualWeeks];
-                                return allWeeks.length > 0 ? allWeeks.map(wk => (
-                                    <button key={wk}
-                                        className={`ftl-bulk__week-chip${bulkWeek === wk ? ' ftl-bulk__week-chip--active' : ''}`}
-                                        onClick={() => setBulkWeek(bulkWeek === wk ? '' : wk)}>
-                                        KW{wk.split('-')[1]}
-                                    </button>
-                                )) : <span className="ftl-bulk__no-weeks">Nicht aktiv in diesem Zeitfenster</span>;
+                <div className="ftl-bulk__header">
+                    <div className="ftl-bulk__header-left">
+                        <div className="ftl-bulk__title">Bulk-Freigabe</div>
+                        <div className="ftl-bulk__subtitle">Freigabe-Level für mehrere HVS in allen aktiven Wochen setzen</div>
+                    </div>
+                    {effectiveSelected ? (
+                        <span className="ftl-bulk__current-badge"
+                            style={(() => {
+                                const c = istufeColors.get(effectiveSelected);
+                                return c ? { backgroundColor: c.bar, color: c.text } : undefined;
                             })()}
+                            title="Bearbeitung aktiv für diesen Softwarestand">
+                            {effectiveSelected}
+                        </span>
+                    ) : null}
+                </div>
+
+                <div className="ftl-bulk__body">
+                    {/* Step 1: pick the target */}
+                    <section className="ftl-bulk__section">
+                        <div className="ftl-bulk__section-title">
+                            <span className="ftl-bulk__step">1</span>
+                            Zielstand wählen
                         </div>
-                    </div>
+                        <div className="ftl-bulk__grid">
+                            <div className="ftl-bulk__field">
+                                <label className="ftl-bulk__label">ISTUFE</label>
+                                <select className="ftl-bulk__select"
+                                    value={bulkSeTermin}
+                                    onChange={e => { setBulkSeTermin(e.target.value); setBulkReife(''); }}>
+                                    <option value="">— wählen —</option>
+                                    {seTerminOptions.map(se => <option key={se} value={se}>{se}</option>)}
+                                </select>
+                            </div>
+                            <div className="ftl-bulk__field">
+                                <label className="ftl-bulk__label">Reifegrad</label>
+                                <select className="ftl-bulk__select"
+                                    value={bulkReife}
+                                    onChange={e => setBulkReife(e.target.value)}
+                                    disabled={!bulkSeTermin}>
+                                    <option value="">{bulkSeTermin ? '— wählen —' : 'Zuerst ISTUFE wählen'}</option>
+                                    {reifeOptions.map(r => <option key={r} value={r}>{r}</option>)}
+                                </select>
+                            </div>
+                            <div className="ftl-bulk__field">
+                                <label className="ftl-bulk__label">Freigabe-Level</label>
+                                <select className="ftl-bulk__select" value={bulkLevel} onChange={e => setBulkLevel(e.target.value)}>
+                                    <option value="">— wählen —</option>
+                                    {['X', 'RSTB', 'L1', 'L2', 'L3', 'L4'].map(l => <option key={l} value={l}>{l}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        {effectiveSelected && (
+                            <div className="ftl-bulk__weeks-preview">
+                                <span className="ftl-bulk__weeks-label">Kalenderwochen:</span>
+                                {availableWeeks.length > 0 ? (
+                                    <>
+                                        {availableWeeks.map(wk => {
+                                            const isChecked = bulkWeeks.has(wk);
+                                            return (
+                                                <button key={wk} type="button"
+                                                    className={`ftl-bulk__week-pill ftl-bulk__week-pill--selectable${isChecked ? ' ftl-bulk__week-pill--active' : ''}`}
+                                                    onClick={() => toggleBulkWeek(wk)}>
+                                                    KW{wk.split('-')[1]}
+                                                </button>
+                                            );
+                                        })}
+                                        <button type="button" className="ftl-bulk__weeks-toggle"
+                                            onClick={() => {
+                                                if (affectedWeeks.length === availableWeeks.length) {
+                                                    setBulkWeeks(new Set());
+                                                } else {
+                                                    setBulkWeeks(new Set(availableWeeks));
+                                                }
+                                            }}>
+                                            {affectedWeeks.length === availableWeeks.length ? 'Keine' : 'Alle'}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <span className="ftl-bulk__weeks-empty">Nicht aktiv im sichtbaren Zeitfenster — Woche navigieren</span>
+                                )}
+                            </div>
+                        )}
+                    </section>
 
-                    {/* Step 2: OFFSET */}
-                    <div className="ftl-bulk__field">
-                        <label className="ftl-bulk__label">ISTUFE (Offset)</label>
-                        {bulkWeek ? (
-                            <select className="ftl-bulk__select" value={bulkOffset} onChange={e => setBulkOffset(e.target.value)}>
-                                <option value="">Offset wählen...</option>
-                                {OFFSET_LIST.map(off => (
-                                    <option key={off} value={off}>{off}</option>
-                                ))}
-                            </select>
-                        ) : <span className="ftl-bulk__no-weeks">Zuerst KW wählen</span>}
-                    </div>
-
-                    {/* Step 3: Level */}
-                    <div className="ftl-bulk__field">
-                        <label className="ftl-bulk__label">Freigabe-Level</label>
-                        <select className="ftl-bulk__select" value={bulkLevel} onChange={e => setBulkLevel(e.target.value)}>
-                            <option value="">Level wählen...</option>
-                            {['X', 'RSTB', 'L1', 'L2', 'L3', 'L4'].map(l => <option key={l} value={l}>{l}</option>)}
-                        </select>
-                    </div>
-
-                    {/* Step 4: HVS selection */}
-                    <div className="ftl-bulk__field">
-                        <label className="ftl-bulk__label">
-                            HVS ({bulkCount} ausgewählt)
-                        </label>
-                        <div className="ftl-bulk__hvs-actions">
-                            <button className="btn btn--ghost btn--sm" onClick={selectAllBulkHvs}>Alle aktiven</button>
-                            <button className="btn btn--ghost btn--sm" onClick={clearBulkHvs}>Keine</button>
+                    {/* Step 2: HVS selection */}
+                    <section className="ftl-bulk__section">
+                        <div className="ftl-bulk__section-title">
+                            <span className="ftl-bulk__step">2</span>
+                            HVS auswählen
+                            <span className="ftl-bulk__count-pill">{bulkCount}</span>
+                            <div className="ftl-bulk__hvs-actions">
+                                <button className="btn btn--ghost btn--sm" onClick={selectAllBulkHvs}>Alle aktiven</button>
+                                <button className="btn btn--ghost btn--sm" onClick={clearBulkHvs}>Keine</button>
+                            </div>
                         </div>
                         <div className="ftl-bulk__hvs-list">
                             {filteredHvs.map(h => {
                                 const isAct = hvsActive[h.key] ?? true;
+                                const isChecked = bulkHvsSelection.has(h.key);
                                 return (
-                                    <label key={h.key} className={`ftl-bulk__hvs-item${!isAct ? ' ftl-bulk__hvs-item--disabled' : ''}`}>
-                                        <input type="checkbox" checked={bulkHvsSelection.has(h.key)}
+                                    <label key={h.key}
+                                        className={`ftl-bulk__hvs-item${!isAct ? ' ftl-bulk__hvs-item--disabled' : ''}${isChecked ? ' ftl-bulk__hvs-item--checked' : ''}`}>
+                                        <input type="checkbox" checked={isChecked}
                                             disabled={!isAct}
                                             onChange={() => toggleBulkHvs(h.key)} />
-                                        <span>{h.wbsType}</span>
+                                        <span className="ftl-bulk__hvs-name">{h.wbsType}</span>
                                         {h.muster && <span className="ftl-bulk__hvs-muster">{h.muster}</span>}
                                     </label>
                                 );
                             })}
                         </div>
-                    </div>
+                    </section>
+                </div>
 
-                    {/* Apply */}
-                    <div className="ftl-bulk__field">
+                {/* Actions bar */}
+                <div className="ftl-bulk__actions">
+                    <button className="btn btn--ghost btn--sm" onClick={resetBulk}>Zurücksetzen</button>
+                    <div className="ftl-bulk__actions-right">
+                        <span className="ftl-bulk__ready-hint">
+                            {bulkReady
+                                ? `${bulkCount} HVS × ${affectedWeeks.length} KW`
+                                : 'ISTUFE, Reifegrad, Level und HVS wählen'}
+                        </span>
                         <button className={`btn btn--primary${bulkReady ? '' : ' btn--disabled'}`}
                             disabled={!bulkReady}
                             onClick={() => setShowBulkConfirm(true)}>
-                            Vorschau & Bestätigen
+                            Vorschau &amp; Bestätigen
                         </button>
                     </div>
                 </div>
@@ -853,16 +1026,24 @@ export const FreigabeTimelinePage: React.FC = () => {
                         <div className="ftl-bulk__confirm-title">Bulk-Freigabe bestätigen</div>
                         <div className="ftl-bulk__confirm-summary">
                             <div className="ftl-bulk__confirm-row">
+                                <span className="ftl-bulk__confirm-label">ISTUFE:</span>
+                                <strong>{bulkSeTermin}</strong>
+                            </div>
+                            <div className="ftl-bulk__confirm-row">
+                                <span className="ftl-bulk__confirm-label">Reifegrad:</span>
+                                <strong>{bulkReife}</strong>
+                            </div>
+                            <div className="ftl-bulk__confirm-row">
                                 <span className="ftl-bulk__confirm-label">Softwarestand:</span>
                                 <strong>{effectiveSelected}</strong>
                             </div>
                             <div className="ftl-bulk__confirm-row">
-                                <span className="ftl-bulk__confirm-label">Woche:</span>
-                                <strong>KW{bulkWeek.split('-')[1]}</strong>
-                            </div>
-                            <div className="ftl-bulk__confirm-row">
-                                <span className="ftl-bulk__confirm-label">ISTUFE:</span>
-                                <strong>{bulkOffset}</strong>
+                                <span className="ftl-bulk__confirm-label">Wochen ({affectedWeeks.length}):</span>
+                                <div className="ftl-bulk__confirm-weeks">
+                                    {affectedWeeks.map(wk => (
+                                        <span key={wk} className="ftl-bulk__week-pill">KW{wk.split('-')[1]}</span>
+                                    ))}
+                                </div>
                             </div>
                             <div className="ftl-bulk__confirm-row">
                                 <span className="ftl-bulk__confirm-label">Freigabe-Level:</span>
@@ -880,86 +1061,61 @@ export const FreigabeTimelinePage: React.FC = () => {
                         <div className="ftl-bulk__confirm-actions">
                             <button className="btn btn--ghost" onClick={() => setShowBulkConfirm(false)}>Abbrechen</button>
                             <button className="btn btn--primary" onClick={() => { applyBulk(); setShowBulkConfirm(false); }}>
-                                Bestätigen & Anwenden
+                                Bestätigen &amp; Anwenden
                             </button>
                         </div>
                     </div>
-                )}
-                </>
                 )}
             </div>
 
             {/* ── Filters ── */}
             <FilterPanel filters={filters} onChange={setFilters}
+                onReset={clearBulkHvs}
                 hvsCount={filteredHvs.length} istufeCount={activeIStufen.length} />
+
+            {/* ── Summary strip ── */}
+            <div className="ftl-summary">
+                <span><strong>{HVS_DATA.length}</strong> HVS</span>
+                <span className="ftl-summary__sep">·</span>
+                <span><strong>{ISTUFE_MASTERS.length}</strong> I-Stufen</span>
+                <span className="ftl-summary__sep">·</span>
+                <span><strong>{PENTHOUSE_TICKETS.length}</strong> Penthouse-Tickets</span>
+                <span className="ftl-summary__sep">·</span>
+                <span><strong>{VERBUND_TICKETS.length}</strong> Verbund-Tickets</span>
+            </div>
 
             {/* ── Gantt Grid ── */}
             <div className="ftl-gantt">
                 {/* Column headers */}
                 <div className="ftl-gantt__header">
-                    <div className="ftl-gantt__label-col">
+                    <div className="ftl-gantt__label-col ftl-gantt__label-col--header">
                         <span className="ftl-gantt__label-title">HVS / Speichertyp</span>
+                        <div className="ftl-gantt__week-nav">
+                            <button type="button" className="ftl-gantt__week-nav-btn"
+                                aria-label="Vorherige Woche"
+                                onClick={() => setWeekOffset(o => o - 1)}>‹</button>
+                            <button type="button" className="ftl-gantt__week-nav-btn ftl-gantt__week-nav-btn--today"
+                                onClick={() => setWeekOffset(0)}
+                                disabled={weekOffset === 0}
+                                title="Zur aktuellen Woche">Heute</button>
+                            <button type="button" className="ftl-gantt__week-nav-btn"
+                                aria-label="Nächste Woche"
+                                onClick={() => setWeekOffset(o => o + 1)}>›</button>
+                        </div>
                     </div>
                     {weeks.map((w, i) => {
                         const isNow = w.week === currentWeek && w.year === currentYear;
                         const labels = ['▴ Vorwoche', '● Aktuelle KW', '▾ Nächste KW'];
+                        const showMonth = i === 0 || w.startDate.getMonth() !== weeks[i - 1].startDate.getMonth() || w.startDate.getFullYear() !== weeks[i - 1].startDate.getFullYear();
+                        const monthLabel = w.startDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
                         return (
                             <div key={w.key} className={`ftl-gantt__kw-col${isNow ? ' ftl-gantt__kw-col--current' : ''}`}>
+                                {showMonth
+                                    ? <span className="ftl-gantt__kw-month">{monthLabel}</span>
+                                    : <span className="ftl-gantt__kw-month ftl-gantt__kw-month--placeholder">·</span>}
                                 <span className="ftl-gantt__kw-hint">{labels[i]}</span>
                                 <span className="ftl-gantt__kw-num">KW{String(w.week).padStart(2, '0')}</span>
                                 <span className="ftl-gantt__kw-dates">{formatDate(w.startDate)} – {formatDate(w.endDate)}</span>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* ── Penthouse-Ticket row (crf4f_planned_component_approvals) ── */}
-                <div className="ftl-gantt__ticket-row">
-                    <div className="ftl-gantt__label-col">
-                        <span className="ftl-gantt__istufe-row-title">Penthouse-Tickets</span>
-                        <span className="ftl-gantt__ticket-sub">Due-Date (Di)</span>
-                    </div>
-                    {weeks.map(w => {
-                        const yw = kwToYearWeek(w);
-                        const tickets = TICKETS_BY_YEARWEEK.get(yw) ?? [];
-                        const isNow = w.week === currentWeek && w.year === currentYear;
-                        return (
-                            <div key={w.key} className={`ftl-gantt__cell ftl-gantt__cell--tickets${isNow ? ' ftl-gantt__cell--current' : ''}`}>
-                                {tickets.length === 0 && <span className="ftl-gantt__ticket-empty">—</span>}
-                                {tickets.map(t => (
-                                    <PenthouseTicketBadge
-                                        key={t.id}
-                                        ticket={t}
-                                        isActive={selectedTicket?.kind === 'penthouse' && selectedTicket.ticket.id === t.id}
-                                        onClick={pt => setSelectedTicket({ kind: 'penthouse', ticket: pt })}
-                                    />
-                                ))}
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* ── Verbund-Ticket row (crf4f_verbundfreigaben / SWAP) ── */}
-                <div className="ftl-gantt__ticket-row ftl-gantt__ticket-row--verbund">
-                    <div className="ftl-gantt__label-col">
-                        <span className="ftl-gantt__istufe-row-title">Verbund-Tickets</span>
-                        <span className="ftl-gantt__ticket-sub">SWAP (Do)</span>
-                    </div>
-                    {weeks.map(w => {
-                        const yw = kwToYearWeek(w);
-                        const tickets = VERBUND_TICKETS_BY_YEARWEEK.get(yw) ?? [];
-                        const isNow = w.week === currentWeek && w.year === currentYear;
-                        return (
-                            <div key={w.key} className={`ftl-gantt__cell ftl-gantt__cell--tickets${isNow ? ' ftl-gantt__cell--current' : ''}`}>
-                                {tickets.length === 0 && <span className="ftl-gantt__ticket-empty">—</span>}
-                                {tickets.map(t => (
-                                    <VerbundTicketBadge
-                                        key={t.id}
-                                        ticket={t}
-                                        isActive={selectedTicket?.kind === 'verbund' && selectedTicket.ticket.id === t.id}
-                                        onClick={vt => setSelectedTicket({ kind: 'verbund', ticket: vt })}
-                                    />
-                                ))}
                             </div>
                         );
                     })}
@@ -985,23 +1141,12 @@ export const FreigabeTimelinePage: React.FC = () => {
                             <div key={w.key} className={`ftl-gantt__cell ftl-gantt__cell--istufe${isNow ? ' ftl-gantt__cell--current' : ''}`}>
                                 {active.map(m => {
                                     const c = istufeColors.get(m.istufe)!;
-                                    const isSelectedInThisKW = effectiveSelected === m.istufe && (!bulkWeek || bulkWeek === yw);
-                                    const isDimmed = !!bulkWeek && bulkWeek !== yw;
+                                    const isSelectedIstufe = effectiveSelected === m.istufe;
                                     return (
                                         <div key={m.istufe}
-                                            className={`ftl-gantt__istufe-chip${isSelectedInThisKW ? ' ftl-gantt__istufe-chip--selected' : ''}${isDimmed ? ' ftl-gantt__istufe-chip--dimmed' : ''}`}
+                                            className={`ftl-gantt__istufe-chip${isSelectedIstufe ? ' ftl-gantt__istufe-chip--selected' : ''}`}
                                             style={{ backgroundColor: c.bar }}
-                                            onClick={() => {
-                                                if (isSelectedInThisKW && bulkWeek === yw) {
-                                                    setSelectedIstufe(null);
-                                                    setBulkWeek('');
-                                                    setBulkOffset('');
-                                                } else {
-                                                    setSelectedIstufe(m.istufe);
-                                                    setBulkWeek(yw);
-                                                    setBulkOffset('');
-                                                }
-                                            }}>
+                                            onClick={() => selectIstufe(isSelectedIstufe ? null : m.istufe)}>
                                             <div className="ftl-gantt__istufe-top">
                                                 <label className="ftl-gantt__istufe-lead" onClick={e => e.stopPropagation()} title="Lead I-Stufe (für diese KW)">
                                                     <input type="checkbox" checked={!!istufeLeads[`${yw}|${m.istufe}`]}
@@ -1030,6 +1175,66 @@ export const FreigabeTimelinePage: React.FC = () => {
                                         </div>
                                     );
                                 })}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* ── Penthouse-Ticket row (cr9b2_planned_component_approvals) ── */}
+                <div className={`ftl-gantt__ticket-row${selectedTicket?.kind === 'penthouse' ? ' ftl-gantt__ticket-row--active' : ''}`}>
+                    <div className="ftl-gantt__label-col">
+                        <span className="ftl-gantt__istufe-row-title">Penthouse</span>
+                        <span className="ftl-gantt__ticket-sub">· Di</span>
+                        <span className="ftl-gantt__ticket-count" title="Anzahl Tickets im sichtbaren Zeitfenster">
+                            {weekKeys.reduce((s, k) => s + (TICKETS_BY_YEARWEEK.get(k)?.length ?? 0), 0)}
+                        </span>
+                    </div>
+                    {weeks.map(w => {
+                        const yw = kwToYearWeek(w);
+                        const tickets = TICKETS_BY_YEARWEEK.get(yw) ?? [];
+                        const isNow = w.week === currentWeek && w.year === currentYear;
+                        return (
+                            <div key={w.key} className={`ftl-gantt__cell ftl-gantt__cell--tickets${isNow ? ' ftl-gantt__cell--current' : ''}`}>
+                                {tickets.length === 0 && <span className="ftl-gantt__ticket-empty">—</span>}
+                                {tickets.map(t => (
+                                    <PenthouseTicketBadge
+                                        key={t.id}
+                                        ticket={t}
+                                        isActive={selectedTicket?.kind === 'penthouse' && selectedTicket.ticket.id === t.id}
+                                        onOpen={pt => setSelectedTicket({ kind: 'penthouse', ticket: pt })}
+                                        onClose={closeTicket}
+                                    />
+                                ))}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* ── Verbund-Ticket row (cr9b2_verbundfreigaben / SWAP) ── */}
+                <div className={`ftl-gantt__ticket-row ftl-gantt__ticket-row--verbund${selectedTicket?.kind === 'verbund' ? ' ftl-gantt__ticket-row--active' : ''}`}>
+                    <div className="ftl-gantt__label-col">
+                        <span className="ftl-gantt__istufe-row-title">Verbund</span>
+                        <span className="ftl-gantt__ticket-sub">· Do</span>
+                        <span className="ftl-gantt__ticket-count" title="Anzahl Tickets im sichtbaren Zeitfenster">
+                            {weekKeys.reduce((s, k) => s + (VERBUND_TICKETS_BY_YEARWEEK.get(k)?.length ?? 0), 0)}
+                        </span>
+                    </div>
+                    {weeks.map(w => {
+                        const yw = kwToYearWeek(w);
+                        const tickets = VERBUND_TICKETS_BY_YEARWEEK.get(yw) ?? [];
+                        const isNow = w.week === currentWeek && w.year === currentYear;
+                        return (
+                            <div key={w.key} className={`ftl-gantt__cell ftl-gantt__cell--tickets${isNow ? ' ftl-gantt__cell--current' : ''}`}>
+                                {tickets.length === 0 && <span className="ftl-gantt__ticket-empty">—</span>}
+                                {tickets.map(t => (
+                                    <VerbundTicketBadge
+                                        key={t.id}
+                                        ticket={t}
+                                        isActive={selectedTicket?.kind === 'verbund' && selectedTicket.ticket.id === t.id}
+                                        onOpen={vt => setSelectedTicket({ kind: 'verbund', ticket: vt })}
+                                        onClose={closeTicket}
+                                    />
+                                ))}
                             </div>
                         );
                     })}
@@ -1114,10 +1319,8 @@ export const FreigabeTimelinePage: React.FC = () => {
 
                             const rows = [...rowMap.values()];
 
-                            const isLockedKW = !!bulkWeek && bulkWeek !== yw;
-
                             return (
-                                <div key={w.key} className={`ftl-gantt__cell${isNow ? ' ftl-gantt__cell--current' : ''}${isLockedKW ? ' ftl-gantt__cell--locked' : ''}`}>
+                                <div key={w.key} className={`ftl-gantt__cell${isNow ? ' ftl-gantt__cell--current' : ''}`}>
                                     {/* CDH Soll badges */}
                                     {cdhHits.map((ch, ci) => (
                                         <div key={`s${ci}`} className="ftl-gantt__cell-row ftl-gantt__cell-row--soll">
@@ -1133,7 +1336,7 @@ export const FreigabeTimelinePage: React.FC = () => {
                                         const c = istufeColors.get(row.istufe) ?? ISTUFE_PALETTE[0];
                                         const isSelected = effectiveSelected === row.istufe;
                                         const isDimmed = effectiveSelected !== null && !isSelected;
-                                        const canEdit = isActive && !isLockedKW && isSelected && (row.isAutoActive ? isEditableInWeek(yw, row.istufe, autoActive) : true);
+                                        const canEdit = isActive && isSelected && (row.isAutoActive ? isEditableInWeek(yw, row.istufe, autoActive) : true);
                                         const needsLead = isSelected && row.isAutoActive && groupNeedsLeadInWeek(yw, row.istufe, autoActive);
 
                                         // Render function for a single offset badge
@@ -1247,7 +1450,6 @@ export const FreigabeTimelinePage: React.FC = () => {
                 </div>
             </div>
 
-            <TicketDetailDrawer selection={selectedTicket} onClose={() => setSelectedTicket(null)} />
         </div>
     );
 };

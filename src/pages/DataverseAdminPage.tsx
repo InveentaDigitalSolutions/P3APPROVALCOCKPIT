@@ -2,14 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 import './DataverseAdminPage.css';
 
 const TABLES = [
-    'crf4f_brv',
-    'crf4f_cdh_ip3',
-    'crf4f_hvs',
-    'crf4f_ilevels_1',
-    'crf4f_ip3_freigaben',
-    'crf4f_planned_component_approvals',
-    'crf4f_verbundfreigaben',
-    'crf4f_wbs_type_mapping',
+    'cr9b2_brv',
+    'cr9b2_cdh_ip3',
+    'cr9b2_hvs',
+    'cr9b2_ilevels_1',
+    'cr9b2_ip3_freigaben',
+    'cr9b2_planned_component_approvals',
+    'cr9b2_verbundfreigaben',
+    'cr9b2_wbs_type_mapping',
 ] as const;
 
 type TableName = typeof TABLES[number];
@@ -87,7 +87,7 @@ interface FormState {
 }
 
 export function DataverseAdminPage() {
-    const [table, setTable] = useState<TableName>('crf4f_wbs_type_mapping');
+    const [table, setTable] = useState<TableName>('cr9b2_wbs_type_mapping');
     const [rows, setRows] = useState<Row[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

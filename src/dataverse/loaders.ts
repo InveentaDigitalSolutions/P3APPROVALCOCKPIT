@@ -19,16 +19,16 @@ function toDateString(v: string | undefined): string {
 /**
  * Load ILevels from Dataverse and aggregate into IStufeMaster[].
  *
- * `crf4f_ilevels_1` is the post-Power-Query exploded form — one row per
+ * `cr9b2_ilevels_1` is the post-Power-Query exploded form — one row per
  * (iLevel × week offset). We group by iLevel and reassemble the offsetWeeks
  * list that the app expects.
  */
 export async function loadILevels(): Promise<IStufeMaster[]> {
-    const rows = await listAll<DvILevel>('crf4f_ilevels_1');
+    const rows = await listAll<DvILevel>('cr9b2_ilevels_1');
 
     const byIlevel = new Map<string, DvILevel[]>();
     for (const row of rows) {
-        const k = row.crf4f_ilevel;
+        const k = row.cr9b2_ilevel;
         if (!k) continue;
         const bucket = byIlevel.get(k);
         if (bucket) bucket.push(row);
@@ -44,8 +44,8 @@ export async function loadILevels(): Promise<IStufeMaster[]> {
 
         const offsetWeeks = group
             .map(r => ({
-                offset: normalizeOffset(r.crf4f_offset ?? ''),
-                week: r.crf4f_week ?? '',
+                offset: normalizeOffset(r.cr9b2_offset ?? ''),
+                week: r.cr9b2_week ?? '',
             }))
             .filter(ow => ow.offset && ow.week)
             .sort((a, b) => a.week.localeCompare(b.week));
@@ -57,8 +57,8 @@ export async function loadILevels(): Promise<IStufeMaster[]> {
             istufe,
             seTermin,
             reife,
-            ats: toDateString(sample.crf4f_ats),
-            sab: toDateString(sample.crf4f_sab),
+            ats: toDateString(sample.cr9b2_ats),
+            sab: toDateString(sample.cr9b2_sab),
             atsWeek,
             sabWeek,
             offsetWeeks,
@@ -91,14 +91,14 @@ function deriveHvsCode(speichertyp: string): string {
  */
 export async function loadHvs(): Promise<HvsEntry[]> {
     const [hvsRows, wbsMapping] = await Promise.all([
-        listAll<DvHvs>('crf4f_hvs'),
-        listAll<DvWbsTypeMapping>('crf4f_wbs_type_mapping'),
+        listAll<DvHvs>('cr9b2_hvs'),
+        listAll<DvWbsTypeMapping>('cr9b2_wbs_type_mapping'),
     ]);
 
     const musterByWbs = new Map<string, string>();
     for (const m of wbsMapping) {
-        if (m.crf4f_wbs_type) {
-            musterByWbs.set(m.crf4f_wbs_type, m.crf4f_muster ?? '');
+        if (m.cr9b2_wbs_type) {
+            musterByWbs.set(m.cr9b2_wbs_type, m.cr9b2_muster ?? '');
         }
     }
 
@@ -106,21 +106,21 @@ export async function loadHvs(): Promise<HvsEntry[]> {
     const seenKeys = new Set<string>();
 
     for (const r of hvsRows) {
-        const key = r.crf4f_key ?? '';
+        const key = r.cr9b2_key ?? '';
         if (!key || seenKeys.has(key)) continue;  // HVS table has one row per (key × MonatJahr); dedupe
         seenKeys.add(key);
 
-        const wbsType = r.crf4f_wbs_type ?? '';
-        const muster = r.crf4f_musterorspeicher || musterByWbs.get(wbsType) || '';
+        const wbsType = r.cr9b2_wbs_type ?? '';
+        const muster = r.cr9b2_musterorspeicher || musterByWbs.get(wbsType) || '';
 
         entries.push({
             brv: 'NA05',
-            hvs: deriveHvsCode(r.crf4f_speichertyp ?? ''),
-            speicher: r.crf4f_pnummer ?? '',
+            hvs: deriveHvsCode(r.cr9b2_speichertyp ?? ''),
+            speicher: r.cr9b2_pnummer ?? '',
             wbsType,
             muster,
             key,
-            penthouse: (r.crf4f_penthouse ?? '').replace(/\s+/g, ''),
+            penthouse: (r.cr9b2_penthouse ?? '').replace(/\s+/g, ''),
             verbundId: null,
             defaultActive: true,
         });

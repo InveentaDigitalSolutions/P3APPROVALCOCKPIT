@@ -1,7 +1,7 @@
 /**
  * Verbundfreigaben (Swap-Tickets, Thursdays).
  *
- * Source: Dataverse `crf4f_verbundfreigaben` (new schema — one row per
+ * Source: Dataverse `cr9b2_verbundfreigaben` (new schema — one row per
  * SWAP ticket with pipe-separated iLevelNames). Snapshot committed as
  * JSON under `./generated/dataverse/verbundfreigaben.json`; refresh with
  * `npm run dump-dataverse`.
@@ -30,13 +30,13 @@ export interface VerbundTicket {
 
 interface VfJsonRow {
     _id: string;
-    crf4f_collapseid?: string;
-    crf4f_name?: string;
-    crf4f_ilevelnames?: string;
-    crf4f_startdate?: string;
-    crf4f_enddate?: string;
-    crf4f_yearweek?: string;
-    crf4f_kw?: string | number;
+    cr9b2_collapseid?: string;
+    cr9b2_name?: string;
+    cr9b2_ilevelnames?: string;
+    cr9b2_startdate?: string;
+    cr9b2_enddate?: string;
+    cr9b2_yearweek?: string;
+    cr9b2_kw?: string | number;
 }
 
 function mmddyyyyToIso(v: string | undefined): string {
@@ -56,16 +56,16 @@ function parseNum(v: string | number | undefined): number {
 function buildTickets(): VerbundTicket[] {
     const rows = vfJson as VfJsonRow[];
     return rows
-        .filter(r => r.crf4f_collapseid && r.crf4f_yearweek)
+        .filter(r => r.cr9b2_collapseid && r.cr9b2_yearweek)
         .map(r => ({
             id: r._id,
-            collapseId: r.crf4f_collapseid ?? '',
-            name: r.crf4f_name ?? '',
-            iLevelNames: (r.crf4f_ilevelnames ?? '').split('|').map(s => s.trim()).filter(Boolean),
-            startDate: mmddyyyyToIso(r.crf4f_startdate),
-            endDate: mmddyyyyToIso(r.crf4f_enddate),
-            yearWeek: r.crf4f_yearweek ?? '',
-            kw: parseNum(r.crf4f_kw),
+            collapseId: r.cr9b2_collapseid ?? '',
+            name: r.cr9b2_name ?? '',
+            iLevelNames: (r.cr9b2_ilevelnames ?? '').split('|').map(s => s.trim()).filter(Boolean),
+            startDate: mmddyyyyToIso(r.cr9b2_startdate),
+            endDate: mmddyyyyToIso(r.cr9b2_enddate),
+            yearWeek: r.cr9b2_yearweek ?? '',
+            kw: parseNum(r.cr9b2_kw),
         }));
 }
 

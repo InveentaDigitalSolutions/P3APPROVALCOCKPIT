@@ -1,46 +1,6 @@
 [
   {
-    "_id": "06c6cf8b-4d3e-f111-88b3-7ced8d2d98ce",
-    "key": "P-114758-PVL_I",
-    "sollFreigabe": "RSTB",
-    "startWeek": "2026-15",
-    "wbsType": "PVL_I",
-    "monatjahr": "Aug-27",
-    "sop": "27-07",
-    "penthouse": "D-HP"
-  },
-  {
-    "_id": "48e2b28d-4d3e-f111-88b3-000d3ada55e3",
-    "key": "P-114758-BBG_I",
-    "sollFreigabe": "RSTB",
-    "startWeek": "2025-21",
-    "wbsType": "BBG_I",
-    "monatjahr": "Aug-27",
-    "sop": "27-07",
-    "penthouse": "C2-HP"
-  },
-  {
-    "_id": "5b7a8089-4d3e-f111-88b4-7c1e52faaf1c",
-    "key": "P-114758-BBG_I",
-    "sollFreigabe": "L2",
-    "startWeek": "2025-27",
-    "wbsType": "BBG_I",
-    "monatjahr": "Aug-27",
-    "sop": "27-07",
-    "penthouse": "C2-HP"
-  },
-  {
-    "_id": "b332ac88-4d3e-f111-88b3-000d3ab386b5",
-    "key": "P-114758-VS1_I",
-    "sollFreigabe": "L2",
-    "startWeek": "2026-51",
-    "wbsType": "VS1_I",
-    "monatjahr": "Aug-27",
-    "sop": "27-07",
-    "penthouse": "D-HP Cost Down"
-  },
-  {
-    "_id": "649fa088-4d3e-f111-88b4-000d3ab44130",
+    "_id": "0f8e739e-fe3e-f111-bec6-7c1e52873f9b",
     "key": "P-114758-VS_I",
     "sollFreigabe": "L3",
     "startWeek": "2026-51",
@@ -50,17 +10,7 @@
     "penthouse": "D-HP Cost Down"
   },
   {
-    "_id": "ebf4a088-4d3e-f111-88b4-7ced8d425f64",
-    "key": "P-114758-BBG_II",
-    "sollFreigabe": "L2",
-    "startWeek": "2025-35",
-    "wbsType": "BBG_II",
-    "monatjahr": "Aug-27",
-    "sop": "27-07",
-    "penthouse": "C2-HP"
-  },
-  {
-    "_id": "b232ac88-4d3e-f111-88b3-000d3ab386b5",
+    "_id": "37da549c-fe3e-f111-bec6-7ced8d4a3175",
     "key": "P-114758-VS_I",
     "sollFreigabe": "L4",
     "startWeek": "2027-16",
@@ -70,17 +20,17 @@
     "penthouse": "D-HP Cost Down"
   },
   {
-    "_id": "eaf4a088-4d3e-f111-88b4-7ced8d425f64",
-    "key": "P-114758-BBG_II",
+    "_id": "0e8e739e-fe3e-f111-bec6-7c1e52873f9b",
+    "key": "P-114758-EBG_I",
     "sollFreigabe": "RSTB",
-    "startWeek": "2025-31",
-    "wbsType": "BBG_II",
+    "startWeek": "2025-13",
+    "wbsType": "EBG_I",
     "monatjahr": "Aug-27",
     "sop": "27-07",
-    "penthouse": "C2-HP"
+    "penthouse": "C09-HP"
   },
   {
-    "_id": "82a1f88a-4d3e-f111-88b4-7ced8d425ec9",
+    "_id": "0a8e739e-fe3e-f111-bec6-7c1e52873f9b",
     "key": "P-114758-VS_I",
     "sollFreigabe": "RSTB",
     "startWeek": "2026-46",
@@ -90,27 +40,47 @@
     "penthouse": "D-HP Cost Down"
   },
   {
-    "_id": "bd8d1e8c-4d3e-f111-88b4-7ced8d752468",
-    "key": "P-114758-PVL_I",
-    "sollFreigabe": "L1",
-    "startWeek": "2026-17",
-    "wbsType": "PVL_I",
-    "monatjahr": "Aug-27",
-    "sop": "27-07",
-    "penthouse": "D-HP"
-  },
-  {
-    "_id": "bc8d1e8c-4d3e-f111-88b4-7ced8d752468",
-    "key": "P-114758-PVL_I",
+    "_id": "0c8e739e-fe3e-f111-bec6-7c1e52873f9b",
+    "key": "P-114758-BBG_I",
     "sollFreigabe": "L2",
-    "startWeek": "2026-21",
+    "startWeek": "2025-27",
+    "wbsType": "BBG_I",
+    "monatjahr": "Aug-27",
+    "sop": "27-07",
+    "penthouse": "C2-HP"
+  },
+  {
+    "_id": "b49df598-fe3e-f111-bec6-0022489c44ec",
+    "key": "P-114758-VS1_I",
+    "sollFreigabe": "L2",
+    "startWeek": "2026-51",
+    "wbsType": "VS1_I",
+    "monatjahr": "Aug-27",
+    "sop": "27-07",
+    "penthouse": "D-HP Cost Down"
+  },
+  {
+    "_id": "0b8e739e-fe3e-f111-bec6-7c1e52873f9b",
+    "key": "P-114758-PVL_I",
+    "sollFreigabe": "RSTB",
+    "startWeek": "2026-15",
     "wbsType": "PVL_I",
     "monatjahr": "Aug-27",
     "sop": "27-07",
     "penthouse": "D-HP"
   },
   {
-    "_id": "46b3a188-4d3e-f111-88b4-7ced8d749e48",
+    "_id": "38da549c-fe3e-f111-bec6-7ced8d4a3175",
+    "key": "P-114758-BBG_I",
+    "sollFreigabe": "RSTB",
+    "startWeek": "2025-21",
+    "wbsType": "BBG_I",
+    "monatjahr": "Aug-27",
+    "sop": "27-07",
+    "penthouse": "C2-HP"
+  },
+  {
+    "_id": "108e739e-fe3e-f111-bec6-7c1e52873f9b",
     "key": "P-114758-PVL_I",
     "sollFreigabe": "L3",
     "startWeek": "2026-27",
@@ -120,13 +90,43 @@
     "penthouse": "D-HP"
   },
   {
-    "_id": "b432ac88-4d3e-f111-88b3-000d3ab386b5",
-    "key": "P-114758-EBG_I",
-    "sollFreigabe": "RSTB",
-    "startWeek": "2025-13",
-    "wbsType": "EBG_I",
+    "_id": "1e03f29b-fe3e-f111-bec6-7ced8d4a3506",
+    "key": "P-114758-PVL_I",
+    "sollFreigabe": "L2",
+    "startWeek": "2026-21",
+    "wbsType": "PVL_I",
     "monatjahr": "Aug-27",
     "sop": "27-07",
-    "penthouse": "C09-HP"
+    "penthouse": "D-HP"
+  },
+  {
+    "_id": "3ada549c-fe3e-f111-bec6-7ced8d4a3175",
+    "key": "P-114758-BBG_II",
+    "sollFreigabe": "L2",
+    "startWeek": "2025-35",
+    "wbsType": "BBG_II",
+    "monatjahr": "Aug-27",
+    "sop": "27-07",
+    "penthouse": "C2-HP"
+  },
+  {
+    "_id": "39da549c-fe3e-f111-bec6-7ced8d4a3175",
+    "key": "P-114758-BBG_II",
+    "sollFreigabe": "RSTB",
+    "startWeek": "2025-31",
+    "wbsType": "BBG_II",
+    "monatjahr": "Aug-27",
+    "sop": "27-07",
+    "penthouse": "C2-HP"
+  },
+  {
+    "_id": "098e739e-fe3e-f111-bec6-7c1e52873f9b",
+    "key": "P-114758-PVL_I",
+    "sollFreigabe": "L1",
+    "startWeek": "2026-17",
+    "wbsType": "PVL_I",
+    "monatjahr": "Aug-27",
+    "sop": "27-07",
+    "penthouse": "D-HP"
   }
 ]

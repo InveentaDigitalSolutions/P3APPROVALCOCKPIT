@@ -1,28 +1,6 @@
 [
   {
-    "_id": "40f4a989-4d3e-f111-88b4-7ced8d425299",
-    "key": "P-114758-PVL_I",
-    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
-    "pnummer": "P-114758",
-    "wbsType": "PVL_I",
-    "muster": "C1.0",
-    "penthouse": "D-HP",
-    "bauphase": "PVL3.1/VS0 &VS1",
-    "monatjahr": "Aug-27"
-  },
-  {
-    "_id": "3ff4a989-4d3e-f111-88b4-7ced8d425299",
-    "key": "P-114758-BBG_I",
-    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
-    "pnummer": "P-114758",
-    "wbsType": "BBG_I",
-    "muster": "B1.0",
-    "penthouse": "C2-HP",
-    "bauphase": "BBG2.1",
-    "monatjahr": "Aug-27"
-  },
-  {
-    "_id": "58f4a088-4d3e-f111-88b4-7ced8d425f64",
+    "_id": "cd8ee297-fe3e-f111-bec6-7c1e52873f9b",
     "key": "P-114758-VS_I",
     "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
     "pnummer": "P-114758",
@@ -33,7 +11,18 @@
     "monatjahr": "Aug-27"
   },
   {
-    "_id": "eb31c388-4d3e-f111-88b4-6045bdddeeea",
+    "_id": "cc8ee297-fe3e-f111-bec6-7c1e52873f9b",
+    "key": "P-114758-BBG_I",
+    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "BBG_I",
+    "muster": "B1.0",
+    "penthouse": "C2-HP",
+    "bauphase": "BBG2.1",
+    "monatjahr": "Aug-27"
+  },
+  {
+    "_id": "2eda549c-fe3e-f111-bec6-7ced8d4a3175",
     "key": "P-114758-EBG_I",
     "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
     "pnummer": "P-114758",
@@ -44,7 +33,7 @@
     "monatjahr": "Aug-27"
   },
   {
-    "_id": "eaa0f88a-4d3e-f111-88b4-7ced8d425ec9",
+    "_id": "30da549c-fe3e-f111-bec6-7ced8d4a3175",
     "key": "P-114758-BBG_II",
     "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
     "pnummer": "P-114758",
@@ -55,7 +44,18 @@
     "monatjahr": "Aug-27"
   },
   {
-    "_id": "b96b8487-4d3e-f111-88b4-7ced8d749023",
+    "_id": "0503f29b-fe3e-f111-bec6-7ced8d4a3506",
+    "key": "P-114758-PVL_I",
+    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "PVL_I",
+    "muster": "C1.0",
+    "penthouse": "D-HP",
+    "bauphase": "PVL3.1/VS0 &VS1",
+    "monatjahr": "Aug-27"
+  },
+  {
+    "_id": "2fda549c-fe3e-f111-bec6-7ced8d4a3175",
     "key": "P-114758-VS1_I",
     "speichertyp": "B6RO0 -002 | RR XL | HP-PH",
     "pnummer": "P-114758",

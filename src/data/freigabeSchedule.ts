@@ -1,7 +1,7 @@
 /**
  * Freigabe schedule data — SOLL approval milestones per (Speicher × WBS_TYPE).
  *
- * Source: Dataverse `crf4f_ip3_freigaben` (HVS ⋈ CDH_IP3 join). Current snapshot
+ * Source: Dataverse `cr9b2_ip3_freigaben` (HVS ⋈ CDH_IP3 join). Current snapshot
  * is committed as JSON under `./generated/dataverse/ip3_freigaben.json`;
  * refresh by running `node scripts/dump-dataverse.mjs`.
  */

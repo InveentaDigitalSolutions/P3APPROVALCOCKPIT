@@ -1,7 +1,7 @@
 /**
  * HVS (Hochvoltspeicher) reference data.
  *
- * Source: Dataverse `crf4f_hvs` ⋈ `crf4f_wbs_type_mapping`. Current snapshot
+ * Source: Dataverse `cr9b2_hvs` ⋈ `cr9b2_wbs_type_mapping`. Current snapshot
  * is committed as JSON under `./generated/dataverse/hvs.json`; refresh it by
  * running `node scripts/dump-dataverse.mjs`.
  */
@@ -50,7 +50,7 @@ function buildHvsData(): HvsEntry[] {
     const rows = hvsJson as DvHvsJson[];
     return rows.map(r => ({
         // TODO: BRV is hardcoded to NA05 per the current PQ filter (P-114758 → NA05).
-        // Source dynamically once multiple BRVs are in scope — see `crf4f_brv` table.
+        // Source dynamically once multiple BRVs are in scope — see `cr9b2_brv` table.
         brv: 'NA05',
         hvs: deriveHvsCode(r.speichertyp),
         speicher: r.pnummer,

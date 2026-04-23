@@ -3,7 +3,7 @@
   "appId": "d913d290-2c06-455d-b1d3-71b2f9bb4cbf",
   "appDisplayName": "Freigabencockpit Next",
   "region": "prod",
-  "environmentId": "b83cf532-5520-e124-ad5e-012e1e43d44d",
+  "environmentId": "de4c7f26-7fe2-ef12-8c20-d939f27f1356",
   "description": "BMW Software Approval Tracking Cockpit",
   "buildPath": "./dist",
   "buildEntryPoint": "index.html",

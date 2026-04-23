@@ -1,7 +1,7 @@
 /**
  * Planned Component Approvals (Penthouse-Tickets, Tuesdays due-date).
  *
- * Source: Dataverse `crf4f_planned_component_approvals`. Current snapshot
+ * Source: Dataverse `cr9b2_planned_component_approvals`. Current snapshot
  * is committed as JSON under `./generated/dataverse/planned_component_approvals.json`;
  * refresh by running `npm run dump-dataverse`.
  *
@@ -41,16 +41,16 @@ export interface PenthouseTicket {
 
 interface PcaJsonRow {
     _id: string;
-    crf4f_jirakey?: string;
-    crf4f_jiraurl?: string;
-    crf4f_name?: string;
-    crf4f_duedate?: string;
-    crf4f_ilevelnames?: string;
-    crf4f_parentjiraissue?: string;
-    crf4f_parentbranches?: string;
-    crf4f_kw?: string | number;
-    crf4f_year?: string | number;
-    crf4f_yearweek?: string;
+    cr9b2_jirakey?: string;
+    cr9b2_jiraurl?: string;
+    cr9b2_name?: string;
+    cr9b2_duedate?: string;
+    cr9b2_ilevelnames?: string;
+    cr9b2_parentjiraissue?: string;
+    cr9b2_parentbranches?: string;
+    cr9b2_kw?: string | number;
+    cr9b2_year?: string | number;
+    cr9b2_yearweek?: string;
 }
 
 function parseJsonArray(s: string | undefined): string[] {
@@ -81,19 +81,19 @@ function parseNum(v: string | number | undefined): number {
 function buildTickets(): PenthouseTicket[] {
     const rows = pcaJson as PcaJsonRow[];
     return rows
-        .filter(r => r.crf4f_jirakey && r.crf4f_yearweek)
+        .filter(r => r.cr9b2_jirakey && r.cr9b2_yearweek)
         .map(r => ({
             id: r._id,
-            jiraKey: r.crf4f_jirakey ?? '',
-            jiraUrl: r.crf4f_jiraurl ?? '',
-            name: r.crf4f_name ?? '',
-            dueDate: mmddyyyyToIso(r.crf4f_duedate),
-            iLevelNames: parseJsonArray(r.crf4f_ilevelnames),
-            parentJiraIssue: r.crf4f_parentjiraissue ?? '',
-            parentBranches: parseJsonArray(r.crf4f_parentbranches),
-            yearWeek: r.crf4f_yearweek ?? '',
-            kw: parseNum(r.crf4f_kw),
-            year: parseNum(r.crf4f_year),
+            jiraKey: r.cr9b2_jirakey ?? '',
+            jiraUrl: r.cr9b2_jiraurl ?? '',
+            name: r.cr9b2_name ?? '',
+            dueDate: mmddyyyyToIso(r.cr9b2_duedate),
+            iLevelNames: parseJsonArray(r.cr9b2_ilevelnames),
+            parentJiraIssue: r.cr9b2_parentjiraissue ?? '',
+            parentBranches: parseJsonArray(r.cr9b2_parentbranches),
+            yearWeek: r.cr9b2_yearweek ?? '',
+            kw: parseNum(r.cr9b2_kw),
+            year: parseNum(r.cr9b2_year),
         }));
 }
 

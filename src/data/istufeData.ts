@@ -1,7 +1,7 @@
 /**
  * I-Stufe (Integration Level) master data.
  *
- * Source: Dataverse `crf4f_ilevels_1` (the post-Power-Query exploded form,
+ * Source: Dataverse `cr9b2_ilevels_1` (the post-Power-Query exploded form,
  * one row per iLevel × week offset). The current snapshot is committed as
  * JSON under `./generated/dataverse/ilevels.json`; refresh it by running
  * `node scripts/dump-dataverse.mjs`.

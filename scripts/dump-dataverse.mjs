@@ -73,101 +73,101 @@ function mmddyyyyToIso(s) {
 
 // Per-table attribute lists. Edit here if you add columns to the Dataverse tables.
 const TABLE_ATTRS = {
-    crf4f_brv: ['crf4f_name'],
-    crf4f_wbs_type_mapping: ['crf4f_wbs_type', 'crf4f_muster', 'crf4f_name'],
-    crf4f_ilevels_1: [
-        'crf4f_ilevel', 'crf4f_number', 'crf4f_ats', 'crf4f_sab', 'crf4f_fs', 'crf4f_sf',
-        'crf4f_offset', 'crf4f_week', 'crf4f_kw', 'crf4f_weekindex',
-        'crf4f_planningcycle', 'crf4f_startofproduction', 'crf4f_status',
-        'crf4f_swipreleases', 'crf4f_oc',
+    cr9b2_brv: ['cr9b2_name'],
+    cr9b2_wbs_type_mapping: ['cr9b2_wbs_type', 'cr9b2_muster', 'cr9b2_name'],
+    cr9b2_ilevels_1: [
+        'cr9b2_ilevel', 'cr9b2_number', 'cr9b2_ats', 'cr9b2_sab', 'cr9b2_fs', 'cr9b2_sf',
+        'cr9b2_offset', 'cr9b2_week', 'cr9b2_kw', 'cr9b2_weekindex',
+        'cr9b2_planningcycle', 'cr9b2_startofproduction', 'cr9b2_status',
+        'cr9b2_swipreleases', 'cr9b2_oc',
     ],
-    crf4f_hvs: [
-        'crf4f_key', 'crf4f_speichertyp', 'crf4f_pnummer', 'crf4f_wbs_type',
-        'crf4f_musterorspeicher', 'crf4f_penthouse', 'crf4f_bauphase',
-        'crf4f_monatjahr', 'crf4f_sop', 'crf4f_wmmlink', 'crf4f_wmmlink_1',
+    cr9b2_hvs: [
+        'cr9b2_key', 'cr9b2_speichertyp', 'cr9b2_pnummer', 'cr9b2_wbs_type',
+        'cr9b2_musterorspeicher', 'cr9b2_penthouse', 'cr9b2_bauphase',
+        'cr9b2_monatjahr', 'cr9b2_sop', 'cr9b2_wmmlink', 'cr9b2_wmmlink_1',
     ],
-    crf4f_ip3_freigaben: [
-        'crf4f_key', 'crf4f_speichertyp', 'crf4f_pnummer', 'crf4f_wbs_type',
-        'crf4f_musterorspeicher', 'crf4f_penthouse', 'crf4f_bauphase',
-        'crf4f_monatjahr', 'crf4f_sop', 'crf4f_sollfreigabe', 'crf4f_startweek',
-        'crf4f_wmmlink', 'crf4f_wmmlink_1',
+    cr9b2_ip3_freigaben: [
+        'cr9b2_key', 'cr9b2_speichertyp', 'cr9b2_pnummer', 'cr9b2_wbs_type',
+        'cr9b2_musterorspeicher', 'cr9b2_penthouse', 'cr9b2_bauphase',
+        'cr9b2_monatjahr', 'cr9b2_sop', 'cr9b2_sollfreigabe', 'cr9b2_startweek',
+        'cr9b2_wmmlink', 'cr9b2_wmmlink_1',
     ],
-    crf4f_verbundfreigaben: [
-        'crf4f_collapseid', 'crf4f_name', 'crf4f_ilevelnames',
-        'crf4f_startdate', 'crf4f_enddate',
-        'crf4f_yearweek', 'crf4f_kw',
+    cr9b2_verbundfreigaben: [
+        'cr9b2_collapseid', 'cr9b2_name', 'cr9b2_ilevelnames',
+        'cr9b2_startdate', 'cr9b2_enddate',
+        'cr9b2_yearweek', 'cr9b2_kw',
     ],
-    crf4f_planned_component_approvals: [
-        'crf4f_jirakey', 'crf4f_jiraurl', 'crf4f_name', 'crf4f_duedate',
-        'crf4f_ilevelnames', 'crf4f_parentjiraissue', 'crf4f_parentbranches',
-        'crf4f_brvs', 'crf4f_sops', 'crf4f_kw', 'crf4f_year', 'crf4f_yearweek',
+    cr9b2_planned_component_approvals: [
+        'cr9b2_jirakey', 'cr9b2_jiraurl', 'cr9b2_name', 'cr9b2_duedate',
+        'cr9b2_ilevelnames', 'cr9b2_parentjiraissue', 'cr9b2_parentbranches',
+        'cr9b2_brvs', 'cr9b2_sops', 'cr9b2_kw', 'cr9b2_year', 'cr9b2_yearweek',
     ],
-    crf4f_cdh_ip3: [
-        'crf4f_key', 'crf4f_name', 'crf4f_name_3', 'crf4f_sollfreigabe',
-        'crf4f_wbs_type3clean', 'crf4f_startweek', 'crf4f_displ_start_date',
-        'crf4f_displ_end_date', 'crf4f_task_type', 'crf4f_in_sync_with',
-        'crf4f_elektr_reichweite', 'crf4f_elektr_reichweiten',
+    cr9b2_cdh_ip3: [
+        'cr9b2_key', 'cr9b2_name', 'cr9b2_name_3', 'cr9b2_sollfreigabe',
+        'cr9b2_wbs_type3clean', 'cr9b2_startweek', 'cr9b2_displ_start_date',
+        'cr9b2_displ_end_date', 'cr9b2_task_type', 'cr9b2_in_sync_with',
+        'cr9b2_elektr_reichweite', 'cr9b2_elektr_reichweiten',
     ],
 };
 
 // Short names used for the output filenames
 const FILENAMES = {
-    crf4f_brv: 'brv.json',
-    crf4f_wbs_type_mapping: 'wbs_type_mapping.json',
-    crf4f_ilevels_1: 'ilevels.json',
-    crf4f_hvs: 'hvs.json',
-    crf4f_ip3_freigaben: 'ip3_freigaben.json',
-    crf4f_verbundfreigaben: 'verbundfreigaben.json',
-    crf4f_planned_component_approvals: 'planned_component_approvals.json',
-    crf4f_cdh_ip3: 'cdh_ip3.json',
+    cr9b2_brv: 'brv.json',
+    cr9b2_wbs_type_mapping: 'wbs_type_mapping.json',
+    cr9b2_ilevels_1: 'ilevels.json',
+    cr9b2_hvs: 'hvs.json',
+    cr9b2_ip3_freigaben: 'ip3_freigaben.json',
+    cr9b2_verbundfreigaben: 'verbundfreigaben.json',
+    cr9b2_planned_component_approvals: 'planned_component_approvals.json',
+    cr9b2_cdh_ip3: 'cdh_ip3.json',
 };
 
 // Custom shaping: the 3 tables wired into the app today use a simpler, stable shape.
 // Leave _id on everything so the dev proxy / admin page can always resolve a PK.
 function shape(entity, rows) {
-    if (entity === 'crf4f_ilevels_1') {
+    if (entity === 'cr9b2_ilevels_1') {
         return rows
-            .filter(r => r.crf4f_ilevel)
+            .filter(r => r.cr9b2_ilevel)
             .map(r => ({
                 _id: r._id,
-                ilevel: r.crf4f_ilevel,
-                number: Number(r.crf4f_number) || 0,
-                ats: mmddyyyyToIso(r.crf4f_ats),
-                sab: mmddyyyyToIso(r.crf4f_sab),
-                offset: r.crf4f_offset,
-                week: r.crf4f_week,
+                ilevel: r.cr9b2_ilevel,
+                number: Number(r.cr9b2_number) || 0,
+                ats: mmddyyyyToIso(r.cr9b2_ats),
+                sab: mmddyyyyToIso(r.cr9b2_sab),
+                offset: r.cr9b2_offset,
+                week: r.cr9b2_week,
             }));
     }
-    if (entity === 'crf4f_hvs') {
+    if (entity === 'cr9b2_hvs') {
         const mapped = rows
-            .filter(r => r.crf4f_key && r.crf4f_wbs_type)
+            .filter(r => r.cr9b2_key && r.cr9b2_wbs_type)
             .map(r => ({
                 _id: r._id,
-                key: r.crf4f_key,
-                speichertyp: r.crf4f_speichertyp ?? '',
-                pnummer: r.crf4f_pnummer ?? '',
-                wbsType: r.crf4f_wbs_type ?? '',
-                muster: r.crf4f_musterorspeicher ?? '',
-                penthouse: r.crf4f_penthouse ?? '',
-                bauphase: r.crf4f_bauphase ?? '',
-                monatjahr: r.crf4f_monatjahr ?? '',
+                key: r.cr9b2_key,
+                speichertyp: r.cr9b2_speichertyp ?? '',
+                pnummer: r.cr9b2_pnummer ?? '',
+                wbsType: r.cr9b2_wbs_type ?? '',
+                muster: r.cr9b2_musterorspeicher ?? '',
+                penthouse: r.cr9b2_penthouse ?? '',
+                bauphase: r.cr9b2_bauphase ?? '',
+                monatjahr: r.cr9b2_monatjahr ?? '',
             }));
         const byKey = new Map();
         for (const r of mapped) if (!byKey.has(r.key)) byKey.set(r.key, r);
         return [...byKey.values()];
     }
-    if (entity === 'crf4f_ip3_freigaben') {
+    if (entity === 'cr9b2_ip3_freigaben') {
         return rows
-            .filter(r => r.crf4f_key && r.crf4f_sollfreigabe)
+            .filter(r => r.cr9b2_key && r.cr9b2_sollfreigabe)
             .map(r => ({
                 _id: r._id,
-                key: r.crf4f_key,
-                sollFreigabe: r.crf4f_sollfreigabe ?? '',
-                startWeek: r.crf4f_startweek ?? '',
-                wbsType: r.crf4f_wbs_type ?? '',
-                monatjahr: r.crf4f_monatjahr ?? '',
-                sop: r.crf4f_sop ?? '',
-                penthouse: r.crf4f_penthouse ?? '',
+                key: r.cr9b2_key,
+                sollFreigabe: r.cr9b2_sollfreigabe ?? '',
+                startWeek: r.cr9b2_startweek ?? '',
+                wbsType: r.cr9b2_wbs_type ?? '',
+                monatjahr: r.cr9b2_monatjahr ?? '',
+                sop: r.cr9b2_sop ?? '',
+                penthouse: r.cr9b2_penthouse ?? '',
             }));
     }
     // Default: raw Dataverse columns preserved
