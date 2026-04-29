@@ -1,9 +1,15 @@
 [
   {
-    "_id": "214e3995-fe3e-f111-bec6-7ced8d4a3175",
-    "cr9b2_wbs_type": "VS1_I",
-    "cr9b2_muster": "D1.2",
-    "cr9b2_name": "1004"
+    "_id": "a33af295-fe3e-f111-bec6-7ced8d4a3506",
+    "cr9b2_wbs_type": "EBG_I",
+    "cr9b2_muster": "A1.0",
+    "cr9b2_name": "1000"
+  },
+  {
+    "_id": "f18de297-fe3e-f111-bec6-7c1e52873f9b",
+    "cr9b2_wbs_type": "BBG_II",
+    "cr9b2_muster": "B2.0",
+    "cr9b2_name": "1006"
   },
   {
     "_id": "234e3995-fe3e-f111-bec6-7ced8d4a3175",
@@ -12,16 +18,16 @@
     "cr9b2_name": "1005"
   },
   {
+    "_id": "214e3995-fe3e-f111-bec6-7ced8d4a3175",
+    "cr9b2_wbs_type": "VS1_I",
+    "cr9b2_muster": "D1.2",
+    "cr9b2_name": "1004"
+  },
+  {
     "_id": "224e3995-fe3e-f111-bec6-7ced8d4a3175",
     "cr9b2_wbs_type": "PVL_I",
     "cr9b2_muster": "C1.0",
     "cr9b2_name": "1003"
-  },
-  {
-    "_id": "a33af295-fe3e-f111-bec6-7ced8d4a3506",
-    "cr9b2_wbs_type": "EBG_I",
-    "cr9b2_muster": "A1.0",
-    "cr9b2_name": "1000"
   },
   {
     "_id": "204e3995-fe3e-f111-bec6-7ced8d4a3175",
@@ -34,11 +40,5 @@
     "cr9b2_wbs_type": "KSP_I",
     "cr9b2_muster": "",
     "cr9b2_name": "1001"
-  },
-  {
-    "_id": "f18de297-fe3e-f111-bec6-7c1e52873f9b",
-    "cr9b2_wbs_type": "BBG_II",
-    "cr9b2_muster": "B2.0",
-    "cr9b2_name": "1006"
   }
 ]

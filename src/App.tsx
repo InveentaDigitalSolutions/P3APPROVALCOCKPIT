@@ -4,6 +4,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { Sidebar } from './components/Sidebar';
 import { FreigabeTimelinePage } from './pages/FreigabeTimelinePage';
 import { DataverseAdminPage } from './pages/DataverseAdminPage';
+import { VerschraenkungenPage } from './pages/VerschraenkungenPage';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <main className="app-content">
               <Routes>
                 <Route path="/freigabe-timeline" element={<FreigabeTimelinePage />} />
+                <Route path="/verschraenkungen" element={<VerschraenkungenPage />} />
                 <Route path="/dataverse" element={<DataverseAdminPage />} />
                 <Route path="*" element={<Navigate to="/freigabe-timeline" replace />} />
               </Routes>

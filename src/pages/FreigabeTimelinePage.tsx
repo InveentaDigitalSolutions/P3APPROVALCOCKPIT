@@ -7,6 +7,7 @@ import { TICKETS_BY_YEARWEEK, PENTHOUSE_TICKETS } from '../data/plannedComponent
 import type { PenthouseTicket } from '../data/plannedComponentApprovals';
 import { VERBUND_TICKETS_BY_YEARWEEK, VERBUND_TICKETS } from '../data/verbundfreigaben';
 import type { VerbundTicket } from '../data/verbundfreigaben';
+import { useEntanglements } from '../data/entanglements';
 import {
     getISOWeek,
     getISOWeekYear,
@@ -195,6 +196,21 @@ const AddEntryPicker: React.FC<{
 type SelectedTicket =
     | { kind: 'penthouse'; ticket: PenthouseTicket }
     | { kind: 'verbund'; ticket: VerbundTicket };
+
+/** Extract SE_TERMIN ("yy-ww") from any iLevel name shape:
+ *  - Penthouse: "NA05-26-07-500" → "26-07"
+ *  - Verbund:   "26-07-500"      → "26-07"
+ *  Skips a non-numeric BRV prefix by finding the first pair of two-digit numeric parts.
+ */
+function extractSeTermin(name: string): string | null {
+    const parts = name.split('-');
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (/^\d{2}$/.test(parts[i]) && /^\d{2}$/.test(parts[i + 1])) {
+            return `${parts[i]}-${parts[i + 1]}`;
+        }
+    }
+    return null;
+}
 
 function ticketColor(name: string): string {
     const cat = name.toUpperCase();
@@ -419,17 +435,124 @@ const VerbundDrawerFields: React.FC<{ ticket: VerbundTicket }> = ({ ticket }) =>
 );
 
 /* ══════════════════════════════════════════════════════
+   ISTUFE filter dropdown (multi-select by SE_TERMIN)
+   ══════════════════════════════════════════════════════ */
+
+interface SeTerminGroup { seTermin: string; swatchKey: string; count: number; }
+
+const IstufeFilterDropdown: React.FC<{
+    groups: SeTerminGroup[];
+    hiddenSeTermine: Set<string>;
+    istufeColors: Map<string, typeof ISTUFE_PALETTE[0]>;
+    onToggle: (seTermin: string) => void;
+    onShowAll: () => void;
+    onHideAll: () => void;
+    /** When true, render the trigger to match the FilterPanel's <select> elements */
+    compact?: boolean;
+}> = ({ groups, hiddenSeTermine, istufeColors, onToggle, onShowAll, onHideAll, compact }) => {
+    const [open, setOpen] = useState(false);
+    const wrapRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!open) return;
+        const onMouse = (e: MouseEvent) => {
+            if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+        };
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+        document.addEventListener('mousedown', onMouse);
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('mousedown', onMouse);
+            document.removeEventListener('keydown', onKey);
+        };
+    }, [open]);
+
+    const visibleCount = groups.length - hiddenSeTermine.size;
+    const compactSummary = hiddenSeTermine.size === 0
+        ? 'Alle ISTUFEN'
+        : visibleCount === 0
+            ? 'Keine ISTUFE'
+            : `${visibleCount} / ${groups.length} ISTUFEN`;
+    const summary = compact
+        ? compactSummary
+        : hiddenSeTermine.size === 0
+            ? `Alle ISTUFEN (${groups.length})`
+            : visibleCount === 0
+                ? 'Keine ISTUFE ausgewählt'
+                : `${visibleCount} von ${groups.length} ISTUFEN`;
+
+    return (
+        <div className={`ftl-istufe-filter${compact ? ' ftl-istufe-filter--compact' : ''}`} ref={wrapRef}>
+            <button type="button"
+                className={`ftl-istufe-filter__trigger${open ? ' ftl-istufe-filter__trigger--open' : ''}${compact ? ' ftl-istufe-filter__trigger--compact' : ''}`}
+                onClick={() => setOpen(o => !o)}
+                aria-haspopup="listbox" aria-expanded={open}>
+                {!compact && <span className="ftl-istufe-filter__trigger-label">ISTUFE</span>}
+                <span className="ftl-istufe-filter__trigger-summary">{summary}</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    className="ftl-istufe-filter__caret" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+            </button>
+
+            {open && (
+                <div className="ftl-istufe-filter__menu" role="listbox">
+                    <div className="ftl-istufe-filter__menu-head">
+                        <button type="button" className="ftl-istufe-filter__menu-action"
+                            onClick={onShowAll} disabled={hiddenSeTermine.size === 0}>
+                            Alle
+                        </button>
+                        <button type="button" className="ftl-istufe-filter__menu-action"
+                            onClick={onHideAll} disabled={hiddenSeTermine.size === groups.length}>
+                            Keine
+                        </button>
+                    </div>
+                    <div className="ftl-istufe-filter__menu-list">
+                        {groups.map(g => {
+                            const c = istufeColors.get(g.swatchKey);
+                            const checked = !hiddenSeTermine.has(g.seTermin);
+                            return (
+                                <label key={g.seTermin}
+                                    className={`ftl-istufe-filter__opt${checked ? ' ftl-istufe-filter__opt--on' : ''}`}>
+                                    <input type="checkbox" checked={checked}
+                                        onChange={() => onToggle(g.seTermin)} />
+                                    <span className="ftl-istufe-filter__opt-swatch"
+                                        style={{ backgroundColor: c?.bar ?? '#999' }} />
+                                    <span className="ftl-istufe-filter__opt-name">{g.seTermin}</span>
+                                    <span className="ftl-istufe-filter__opt-count">{g.count}</span>
+                                </label>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+/* ══════════════════════════════════════════════════════
    Filter Panel
    ══════════════════════════════════════════════════════ */
 
 interface Filters { wbsType: string; muster: string; penthouse: string; search: string; }
 const EMPTY_FILTERS: Filters = { wbsType: '', muster: '', penthouse: '', search: '' };
 
+interface IstufeFilterPanelProps {
+    groups: SeTerminGroup[];
+    hiddenSeTermine: Set<string>;
+    istufeColors: Map<string, typeof ISTUFE_PALETTE[0]>;
+    onToggle: (seTermin: string) => void;
+    onShowAll: () => void;
+    onHideAll: () => void;
+}
+
 const FilterPanel: React.FC<{
     filters: Filters; onChange: (f: Filters) => void;
     onReset?: () => void;
     hvsCount: number; istufeCount: number;
-}> = ({ filters, onChange, onReset, hvsCount, istufeCount }) => {
+    istufeFilter?: IstufeFilterPanelProps;
+}> = ({ filters, onChange, onReset, hvsCount, istufeCount, istufeFilter }) => {
     const wbsOptions = [...new Set(HVS_DATA.map(h => h.wbsType))];
     const musterOptions = [...new Set(HVS_DATA.map(h => h.muster).filter(Boolean))];
     const penthouseOptions = [...new Set(HVS_DATA.map(h => h.penthouse).filter(Boolean))].sort();
@@ -441,6 +564,9 @@ const FilterPanel: React.FC<{
             <div className="ftl-filters__row">
                 <input className="ftl-filters__search" type="text" placeholder="HVS, WBS suchen..."
                     value={filters.search} onChange={e => set('search', e.target.value)} />
+                {istufeFilter && istufeFilter.groups.length > 0 && (
+                    <IstufeFilterDropdown {...istufeFilter} compact />
+                )}
                 <select className="ftl-filters__select" value={filters.penthouse} onChange={e => set('penthouse', e.target.value)}>
                     <option value="">Alle Penthouses</option>
                     {penthouseOptions.map(p => <option key={p} value={p}>{p}</option>)}
@@ -550,6 +676,70 @@ export const FreigabeTimelinePage: React.FC = () => {
 
     const istufeColors = useMemo(() => buildIstufeColorMap(allVisibleIStufen), [allVisibleIStufen]);
 
+    /* ── ISTUFE filter (by SE_TERMIN, e.g. "26-07") — hide-set, default empty (= show all).
+       A single pill toggles every Softwarestand sharing that SE_TERMIN. */
+    const [hiddenSeTermine, setHiddenSeTermine] = useState<Set<string>>(new Set());
+    const seTerminFor = useCallback((istufeKey: string): string => {
+        const master = ISTUFE_MASTERS.find(m => m.istufe === istufeKey);
+        if (master) return master.seTermin;
+        // Fallback: split "yy-ww-reife" → "yy-ww"
+        const idx = istufeKey.lastIndexOf('-');
+        return idx >= 0 ? istufeKey.slice(0, idx) : istufeKey;
+    }, []);
+    const isIstufeVisible = useCallback(
+        (istufeKey: string) => !hiddenSeTermine.has(seTerminFor(istufeKey)),
+        [hiddenSeTermine, seTerminFor],
+    );
+
+    /** Strict ticket-visibility: hide if ANY of its iLevelNames belongs to a hidden SE_TERMIN.
+     *  Tickets with no iLevelNames are always shown (no constraint to apply). */
+    const isTicketVisible = useCallback(
+        (iLevelNames: string[]): boolean => {
+            if (!iLevelNames || iLevelNames.length === 0) return true;
+            if (hiddenSeTermine.size === 0) return true;
+            for (const name of iLevelNames) {
+                const se = extractSeTermin(name);
+                if (se && hiddenSeTermine.has(se)) return false;
+            }
+            return true;
+        },
+        [hiddenSeTermine],
+    );
+
+    const visibleSeTermine = useMemo(() => {
+        // One entry per SE_TERMIN currently in scope, with a swatch color
+        // (taken from the highest-Reife istufe in that group) and a member count.
+        const groups = new Map<string, { swatchKey: string; count: number; topReife: number }>();
+        for (const m of allVisibleIStufen) {
+            const cur = groups.get(m.seTermin);
+            if (!cur) {
+                groups.set(m.seTermin, { swatchKey: m.istufe, count: 1, topReife: m.reife });
+            } else {
+                cur.count += 1;
+                if (m.reife > cur.topReife) {
+                    cur.topReife = m.reife;
+                    cur.swatchKey = m.istufe;
+                }
+            }
+        }
+        return [...groups.entries()]
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([seTermin, info]) => ({ seTermin, swatchKey: info.swatchKey, count: info.count }));
+    }, [allVisibleIStufen]);
+
+    const toggleSeTerminVisibility = useCallback((seTermin: string) => {
+        setHiddenSeTermine(prev => {
+            const next = new Set(prev);
+            if (next.has(seTermin)) next.delete(seTermin); else next.add(seTermin);
+            return next;
+        });
+    }, []);
+    const showAllIstufen = useCallback(() => setHiddenSeTermine(new Set()), []);
+    const hideAllIstufen = useCallback(
+        () => setHiddenSeTermine(new Set(visibleSeTermine.map(g => g.seTermin))),
+        [visibleSeTermine],
+    );
+
     /* ── Bulk edit: SE_TERMIN + Reifegrad → derive ISTUFE key ── */
     const [bulkSeTermin, setBulkSeTermin] = useState<string>('');
     const [bulkReife, setBulkReife] = useState<string>('');
@@ -595,6 +785,38 @@ export const FreigabeTimelinePage: React.FC = () => {
         }
         return rows;
     }, [filters]);
+
+    /* ── Entanglements (Verschränkungen): pin a Softwarestand to (Speicher, Muster) ── */
+    const { findByIstufe } = useEntanglements();
+    const currentEntanglement = useMemo(
+        () => (effectiveSelected ? findByIstufe(effectiveSelected) : undefined),
+        [effectiveSelected, findByIstufe],
+    );
+
+    /** HVS rows visible inside the Bulk-Freigabe panel.
+     *  When the selected Softwarestand is entangled, we hide all rows that
+     *  don't match the entangled (Speicher × Muster) — the user cannot
+     *  release that ISTUFE for any other Speichermuster. */
+    const bulkVisibleHvs = useMemo(() => {
+        if (!currentEntanglement) return filteredHvs;
+        return filteredHvs.filter(h =>
+            h.hvs === currentEntanglement.speicher && h.muster === currentEntanglement.muster);
+    }, [filteredHvs, currentEntanglement]);
+
+    /* When the entanglement changes, drop any selected HVS that's no longer eligible. */
+    useEffect(() => {
+        if (!currentEntanglement) return;
+        const allowed = new Set(bulkVisibleHvs.map(h => h.key));
+        setBulkHvsSelection(prev => {
+            let changed = false;
+            const next = new Set<string>();
+            for (const k of prev) {
+                if (allowed.has(k)) next.add(k);
+                else changed = true;
+            }
+            return changed ? next : prev;
+        });
+    }, [currentEntanglement, bulkVisibleHvs]);
 
     /* ── HVS active/inactive toggle ── */
     const [hvsActive, setHvsActive] = useState<Record<string, boolean>>(() => {
@@ -777,8 +999,8 @@ export const FreigabeTimelinePage: React.FC = () => {
     }, []);
 
     const selectAllBulkHvs = useCallback(() => {
-        setBulkHvsSelection(new Set(filteredHvs.filter(h => hvsActive[h.key] ?? true).map(h => h.key)));
-    }, [filteredHvs, hvsActive]);
+        setBulkHvsSelection(new Set(bulkVisibleHvs.filter(h => hvsActive[h.key] ?? true).map(h => h.key)));
+    }, [bulkVisibleHvs, hvsActive]);
 
     const clearBulkHvs = useCallback(() => {
         setBulkHvsSelection(new Set());
@@ -984,8 +1206,22 @@ export const FreigabeTimelinePage: React.FC = () => {
                                 <button className="btn btn--ghost btn--sm" onClick={clearBulkHvs}>Keine</button>
                             </div>
                         </div>
+                        {currentEntanglement && (
+                            <div className="ftl-bulk__entanglement">
+                                <span className="ftl-bulk__entanglement-icon" aria-hidden="true">🔗</span>
+                                <span>
+                                    <strong>{currentEntanglement.istufe}</strong> ist an
+                                    {' '}<strong>{currentEntanglement.speicher}</strong>
+                                    {' · '}<strong>{currentEntanglement.muster}</strong> verschränkt —
+                                    Freigaben gelten ausschließlich für diese Kombination.
+                                </span>
+                            </div>
+                        )}
                         <div className="ftl-bulk__hvs-list">
-                            {filteredHvs.map(h => {
+                            {bulkVisibleHvs.length === 0 && currentEntanglement && (
+                                <span className="ftl-bulk__no-weeks">Kein passender HVS-Eintrag im aktuellen Filter</span>
+                            )}
+                            {bulkVisibleHvs.map(h => {
                                 const isAct = hvsActive[h.key] ?? true;
                                 const isChecked = bulkHvsSelection.has(h.key);
                                 return (
@@ -1068,10 +1304,19 @@ export const FreigabeTimelinePage: React.FC = () => {
                 )}
             </div>
 
-            {/* ── Filters ── */}
+            {/* ── Filters (incl. ISTUFE multi-select) ── */}
             <FilterPanel filters={filters} onChange={setFilters}
                 onReset={clearBulkHvs}
-                hvsCount={filteredHvs.length} istufeCount={activeIStufen.length} />
+                hvsCount={filteredHvs.length} istufeCount={activeIStufen.length}
+                istufeFilter={{
+                    groups: visibleSeTermine,
+                    hiddenSeTermine,
+                    istufeColors,
+                    onToggle: toggleSeTerminVisibility,
+                    onShowAll: showAllIstufen,
+                    onHideAll: hideAllIstufen,
+                }}
+            />
 
             {/* ── Summary strip ── */}
             <div className="ftl-summary">
@@ -1137,9 +1382,10 @@ export const FreigabeTimelinePage: React.FC = () => {
                         const manualIstufeKeys = new Set(manualEntries.filter(e => e.weekKey === yw).map(e => e.istufe));
                         const manualExtra = allVisibleIStufen.filter(m => manualIstufeKeys.has(m.istufe) && !autoActive.some(a => a.istufe === m.istufe));
                         const active = [...autoActive, ...manualExtra];
+                        const visibleActive = active.filter(m => isIstufeVisible(m.istufe));
                         return (
                             <div key={w.key} className={`ftl-gantt__cell ftl-gantt__cell--istufe${isNow ? ' ftl-gantt__cell--current' : ''}`}>
-                                {active.map(m => {
+                                {visibleActive.map(m => {
                                     const c = istufeColors.get(m.istufe)!;
                                     const isSelectedIstufe = effectiveSelected === m.istufe;
                                     return (
@@ -1185,13 +1431,16 @@ export const FreigabeTimelinePage: React.FC = () => {
                     <div className="ftl-gantt__label-col">
                         <span className="ftl-gantt__istufe-row-title">Penthouse</span>
                         <span className="ftl-gantt__ticket-sub">· Di</span>
-                        <span className="ftl-gantt__ticket-count" title="Anzahl Tickets im sichtbaren Zeitfenster">
-                            {weekKeys.reduce((s, k) => s + (TICKETS_BY_YEARWEEK.get(k)?.length ?? 0), 0)}
+                        <span className="ftl-gantt__ticket-count" title="Anzahl Tickets im sichtbaren Zeitfenster (nach ISTUFE-Filter)">
+                            {weekKeys.reduce(
+                                (s, k) => s + (TICKETS_BY_YEARWEEK.get(k)?.filter(t => isTicketVisible(t.iLevelNames)).length ?? 0),
+                                0,
+                            )}
                         </span>
                     </div>
                     {weeks.map(w => {
                         const yw = kwToYearWeek(w);
-                        const tickets = TICKETS_BY_YEARWEEK.get(yw) ?? [];
+                        const tickets = (TICKETS_BY_YEARWEEK.get(yw) ?? []).filter(t => isTicketVisible(t.iLevelNames));
                         const isNow = w.week === currentWeek && w.year === currentYear;
                         return (
                             <div key={w.key} className={`ftl-gantt__cell ftl-gantt__cell--tickets${isNow ? ' ftl-gantt__cell--current' : ''}`}>
@@ -1215,13 +1464,16 @@ export const FreigabeTimelinePage: React.FC = () => {
                     <div className="ftl-gantt__label-col">
                         <span className="ftl-gantt__istufe-row-title">Verbund</span>
                         <span className="ftl-gantt__ticket-sub">· Do</span>
-                        <span className="ftl-gantt__ticket-count" title="Anzahl Tickets im sichtbaren Zeitfenster">
-                            {weekKeys.reduce((s, k) => s + (VERBUND_TICKETS_BY_YEARWEEK.get(k)?.length ?? 0), 0)}
+                        <span className="ftl-gantt__ticket-count" title="Anzahl Tickets im sichtbaren Zeitfenster (nach ISTUFE-Filter)">
+                            {weekKeys.reduce(
+                                (s, k) => s + (VERBUND_TICKETS_BY_YEARWEEK.get(k)?.filter(t => isTicketVisible(t.iLevelNames)).length ?? 0),
+                                0,
+                            )}
                         </span>
                     </div>
                     {weeks.map(w => {
                         const yw = kwToYearWeek(w);
-                        const tickets = VERBUND_TICKETS_BY_YEARWEEK.get(yw) ?? [];
+                        const tickets = (VERBUND_TICKETS_BY_YEARWEEK.get(yw) ?? []).filter(t => isTicketVisible(t.iLevelNames));
                         const isNow = w.week === currentWeek && w.year === currentYear;
                         return (
                             <div key={w.key} className={`ftl-gantt__cell ftl-gantt__cell--tickets${isNow ? ' ftl-gantt__cell--current' : ''}`}>
@@ -1332,7 +1584,7 @@ export const FreigabeTimelinePage: React.FC = () => {
                                     ))}
 
                                     {/* Unified rows per Softwarestand */}
-                                    {rows.map(row => {
+                                    {rows.filter(row => isIstufeVisible(row.istufe)).map(row => {
                                         const c = istufeColors.get(row.istufe) ?? ISTUFE_PALETTE[0];
                                         const isSelected = effectiveSelected === row.istufe;
                                         const isDimmed = effectiveSelected !== null && !isSelected;
@@ -1438,7 +1690,7 @@ export const FreigabeTimelinePage: React.FC = () => {
                 </div>
                 <div className="ftl-legend__section">
                     <span className="ftl-legend__heading">Softwarestände:</span>
-                    {activeIStufen.map(m => {
+                    {activeIStufen.filter(m => isIstufeVisible(m.istufe)).map(m => {
                         const c = istufeColors.get(m.istufe)!;
                         return (
                             <div key={m.istufe} className="ftl-legend__item">

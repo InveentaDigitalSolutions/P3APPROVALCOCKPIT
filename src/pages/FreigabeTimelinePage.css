@@ -41,6 +41,124 @@
     to { transform: rotate(360deg); }
 }
 
+/* ── ISTUFE visibility filter (multi-select dropdown) ── */
+.ftl-istufe-filter {
+    position: relative; align-self: flex-start;
+}
+.ftl-istufe-filter--compact { display: inline-flex; }
+.ftl-istufe-filter__trigger {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    background: var(--bmw-white);
+    border: 1px solid rgba(15, 30, 60, 0.12);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    transition: all var(--transition-fast);
+    min-width: 280px; max-width: 100%;
+}
+/* Compact = sized to match the FilterPanel <select>s */
+.ftl-istufe-filter__trigger--compact {
+    height: 28px; padding: 0 8px; gap: 6px;
+    min-width: 150px; border-radius: var(--border-radius);
+    background: var(--bmw-off-white);
+    border: var(--border-light);
+    font-size: 0.75rem;
+}
+.ftl-istufe-filter__trigger--compact .ftl-istufe-filter__trigger-summary {
+    font-size: 0.75rem; font-weight: var(--font-semibold); color: var(--bmw-black);
+    white-space: nowrap;
+}
+.ftl-istufe-filter__trigger--compact:focus { outline: none; border-color: var(--bmw-blue); }
+.ftl-istufe-filter__trigger:hover { border-color: rgba(28, 105, 212, 0.45); }
+.ftl-istufe-filter__trigger--open {
+    border-color: var(--bmw-blue);
+    box-shadow: 0 0 0 3px rgba(28, 105, 212, 0.12);
+}
+.ftl-istufe-filter__trigger-label {
+    font-size: 0.62rem; font-weight: var(--font-bold); color: var(--bmw-mid-grey);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding-right: 8px; border-right: 1px solid rgba(15, 30, 60, 0.1);
+}
+.ftl-istufe-filter__trigger-summary {
+    flex: 1; text-align: left;
+    font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--bmw-charcoal);
+}
+.ftl-istufe-filter__caret {
+    color: var(--bmw-mid-grey); flex-shrink: 0;
+    transition: transform var(--transition-fast);
+}
+.ftl-istufe-filter__trigger--open .ftl-istufe-filter__caret { transform: rotate(180deg); }
+
+.ftl-istufe-filter__menu {
+    position: absolute; top: calc(100% + 4px); left: 0; z-index: 20;
+    min-width: 280px; max-width: 360px;
+    max-height: 360px; overflow: hidden;
+    display: flex; flex-direction: column;
+    background: var(--bmw-white);
+    border: 1px solid rgba(15, 30, 60, 0.12);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(15, 30, 60, 0.15);
+    animation: ftl-fade-in 120ms ease-out;
+}
+@keyframes ftl-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.ftl-istufe-filter__menu-head {
+    display: flex; gap: 4px; padding: 6px 8px;
+    border-bottom: 1px solid rgba(15, 30, 60, 0.06);
+    background: rgba(15, 30, 60, 0.02);
+}
+.ftl-istufe-filter__menu-action {
+    flex: 1; padding: 6px 10px;
+    background: transparent; border: 1px solid rgba(15, 30, 60, 0.08);
+    border-radius: 6px;
+    font-size: 0.7rem; font-weight: var(--font-bold);
+    color: var(--bmw-blue); cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    transition: all var(--transition-fast);
+}
+.ftl-istufe-filter__menu-action:hover:not(:disabled) {
+    background: var(--bmw-blue-light); border-color: var(--bmw-blue);
+}
+.ftl-istufe-filter__menu-action:disabled {
+    color: var(--bmw-silver); cursor: not-allowed;
+}
+
+.ftl-istufe-filter__menu-list {
+    overflow-y: auto;
+    padding: 4px;
+}
+.ftl-istufe-filter__opt {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 6px;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+.ftl-istufe-filter__opt:hover { background: rgba(28, 105, 212, 0.06); }
+.ftl-istufe-filter__opt input { margin: 0; cursor: pointer; accent-color: var(--bmw-blue); }
+.ftl-istufe-filter__opt-swatch {
+    display: inline-block; width: 14px; height: 14px; border-radius: 4px;
+    flex-shrink: 0;
+}
+.ftl-istufe-filter__opt-name {
+    flex: 1; font-family: var(--font-mono);
+    font-size: var(--text-sm); font-weight: var(--font-semibold);
+    color: var(--bmw-charcoal);
+}
+.ftl-istufe-filter__opt-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 18px; padding: 0 6px; border-radius: 999px;
+    background: var(--bmw-light-grey);
+    font-size: 0.66rem; font-weight: var(--font-bold); font-family: var(--font-mono);
+    color: var(--bmw-mid-grey);
+}
+.ftl-istufe-filter__opt--on .ftl-istufe-filter__opt-count {
+    background: var(--bmw-blue-light); color: var(--bmw-blue);
+}
+
 /* ── Filter Panel ── */
 .ftl-filters {
     display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
@@ -648,6 +766,20 @@
 .ftl-bulk__weeks-toggle:hover { background: rgba(28, 105, 212, 0.08); }
 
 .ftl-bulk__hvs-actions { display: flex; gap: 6px; margin-left: auto; }
+
+.ftl-bulk__entanglement {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 10px 14px; border-radius: 8px;
+    background: linear-gradient(180deg, rgba(28, 105, 212, 0.08) 0%, rgba(28, 105, 212, 0.04) 100%);
+    border: 1px solid rgba(28, 105, 212, 0.25);
+    font-size: var(--text-xs); color: var(--bmw-charcoal);
+    line-height: 1.4;
+}
+.ftl-bulk__entanglement strong {
+    color: var(--bmw-blue); font-family: var(--font-mono);
+    font-weight: var(--font-bold);
+}
+.ftl-bulk__entanglement-icon { font-size: 0.95rem; flex-shrink: 0; }
 .ftl-bulk__hvs-list {
     display: flex; flex-wrap: wrap; gap: 6px; max-height: 180px; overflow-y: auto;
     padding: var(--space-2); background: var(--bmw-off-white); border-radius: 8px;
