@@ -49,9 +49,50 @@ const ISTUFE_PALETTE = [
     { bar: '#AD1457', light: 'rgba(173,20,87,0.12)', text: '#fff' },     // pink
 ];
 
+/**
+ * Status per SE_TERMIN — drives visual treatment + default filter.
+ * Update this when a new ISTUFE comes online or one is cancelled.
+ * (Once a Dataverse table is available, replace this with a fetched lookup.)
+ */
+type SeTerminStatus = 'abgebrancht' | 'entwicklung' | 'planung';
+const SE_TERMIN_STATUS: Record<string, SeTerminStatus> = {
+    '26-07': 'abgebrancht',
+    '26-11': 'entwicklung',
+};
+const SE_TERMIN_STATUS_LABEL: Record<SeTerminStatus, string> = {
+    abgebrancht: 'Abgebrancht',
+    entwicklung: 'Entwicklungszeitschiene',
+    planung: 'Planung',
+};
+
+/** SE_TERMINE that should be visible by default when the page first loads. */
+const DEFAULT_VISIBLE_SE_TERMINE = ['26-07', '26-11'];
+
+/**
+ * Stable color per SE_TERMIN ("26-03", "26-07", "26-11"…), assigned
+ * deterministically across all known I-Stufen. Every Softwarestand within the
+ * same SE_TERMIN shares this color, regardless of Reifegrad or week window.
+ */
+const SE_TERMIN_COLORS: Map<string, typeof ISTUFE_PALETTE[0]> = (() => {
+    const map = new Map<string, typeof ISTUFE_PALETTE[0]>();
+    const sorted = [...new Set(ISTUFE_MASTERS.map(m => m.seTermin))].sort();
+    sorted.forEach((se, i) => map.set(se, ISTUFE_PALETTE[i % ISTUFE_PALETTE.length]));
+    return map;
+})();
+
+/** Resolve color for a SE_TERMIN ("yy-ww"). Returns undefined if unknown. */
+function colorForSeTermin(se: string | null | undefined): typeof ISTUFE_PALETTE[0] | undefined {
+    if (!se) return undefined;
+    return SE_TERMIN_COLORS.get(se);
+}
+
+/** Build an istufe-keyed lookup that returns the SE_TERMIN color for each entry. */
 function buildIstufeColorMap(masters: IStufeMaster[]) {
     const map = new Map<string, typeof ISTUFE_PALETTE[0]>();
-    masters.forEach((m, i) => map.set(m.istufe, ISTUFE_PALETTE[i % ISTUFE_PALETTE.length]));
+    for (const m of masters) {
+        const c = SE_TERMIN_COLORS.get(m.seTermin);
+        if (c) map.set(m.istufe, c);
+    }
     return map;
 }
 
@@ -392,9 +433,15 @@ const PenthouseDrawerFields: React.FC<{ ticket: PenthouseTicket }> = ({ ticket }
                     I-Stufen <span className="ftl-drawer__count">({ticket.iLevelNames.length})</span>
                 </div>
                 <div className="ftl-drawer__tags">
-                    {ticket.iLevelNames.map(n => (
-                        <span key={n} className="ftl-drawer__tag">{n}</span>
-                    ))}
+                    {ticket.iLevelNames.map(n => {
+                        const c = colorForSeTermin(extractSeTermin(n));
+                        return (
+                            <span key={n} className="ftl-drawer__tag"
+                                style={c ? { backgroundColor: c.bar, color: c.text, borderColor: c.bar } : undefined}>
+                                {n}
+                            </span>
+                        );
+                    })}
                 </div>
             </div>
         )}
@@ -425,9 +472,15 @@ const VerbundDrawerFields: React.FC<{ ticket: VerbundTicket }> = ({ ticket }) =>
                     I-Stufen <span className="ftl-drawer__count">({ticket.iLevelNames.length})</span>
                 </div>
                 <div className="ftl-drawer__tags">
-                    {ticket.iLevelNames.map(n => (
-                        <span key={n} className="ftl-drawer__tag">{n}</span>
-                    ))}
+                    {ticket.iLevelNames.map(n => {
+                        const c = colorForSeTermin(extractSeTermin(n));
+                        return (
+                            <span key={n} className="ftl-drawer__tag"
+                                style={c ? { backgroundColor: c.bar, color: c.text, borderColor: c.bar } : undefined}>
+                                {n}
+                            </span>
+                        );
+                    })}
                 </div>
             </div>
         )}
@@ -512,6 +565,7 @@ const IstufeFilterDropdown: React.FC<{
                         {groups.map(g => {
                             const c = istufeColors.get(g.swatchKey);
                             const checked = !hiddenSeTermine.has(g.seTermin);
+                            const status = SE_TERMIN_STATUS[g.seTermin];
                             return (
                                 <label key={g.seTermin}
                                     className={`ftl-istufe-filter__opt${checked ? ' ftl-istufe-filter__opt--on' : ''}`}>
@@ -520,6 +574,11 @@ const IstufeFilterDropdown: React.FC<{
                                     <span className="ftl-istufe-filter__opt-swatch"
                                         style={{ backgroundColor: c?.bar ?? '#999' }} />
                                     <span className="ftl-istufe-filter__opt-name">{g.seTermin}</span>
+                                    {status && (
+                                        <span className={`ftl-istufe-filter__opt-status ftl-istufe-filter__opt-status--${status}`}>
+                                            {SE_TERMIN_STATUS_LABEL[status]}
+                                        </span>
+                                    )}
                                     <span className="ftl-istufe-filter__opt-count">{g.count}</span>
                                 </label>
                             );
@@ -678,7 +737,13 @@ export const FreigabeTimelinePage: React.FC = () => {
 
     /* ── ISTUFE filter (by SE_TERMIN, e.g. "26-07") — hide-set, default empty (= show all).
        A single pill toggles every Softwarestand sharing that SE_TERMIN. */
-    const [hiddenSeTermine, setHiddenSeTermine] = useState<Set<string>>(new Set());
+    /* On first mount, hide every SE_TERMIN that is NOT in DEFAULT_VISIBLE_SE_TERMINE
+       so the cockpit defaults to the cancelled + development streams (per requirements). */
+    const [hiddenSeTermine, setHiddenSeTermine] = useState<Set<string>>(() => {
+        const all = new Set(ISTUFE_MASTERS.map(m => m.seTermin));
+        for (const s of DEFAULT_VISIBLE_SE_TERMINE) all.delete(s);
+        return all;
+    });
     const seTerminFor = useCallback((istufeKey: string): string => {
         const master = ISTUFE_MASTERS.find(m => m.istufe === istufeKey);
         if (master) return master.seTermin;
@@ -795,12 +860,11 @@ export const FreigabeTimelinePage: React.FC = () => {
 
     /** HVS rows visible inside the Bulk-Freigabe panel.
      *  When the selected Softwarestand is entangled, we hide all rows that
-     *  don't match the entangled (Speicher × Muster) — the user cannot
-     *  release that ISTUFE for any other Speichermuster. */
+     *  don't match the entangled Speicher — the user cannot release that
+     *  ISTUFE for any other Speicher. */
     const bulkVisibleHvs = useMemo(() => {
         if (!currentEntanglement) return filteredHvs;
-        return filteredHvs.filter(h =>
-            h.hvs === currentEntanglement.speicher && h.muster === currentEntanglement.muster);
+        return filteredHvs.filter(h => h.hvs === currentEntanglement.speicher);
     }, [filteredHvs, currentEntanglement]);
 
     /* When the entanglement changes, drop any selected HVS that's no longer eligible. */
@@ -1029,6 +1093,25 @@ export const FreigabeTimelinePage: React.FC = () => {
         return availableWeeks.filter(wk => bulkWeeks.has(wk));
     }, [availableWeeks, bulkWeeks]);
 
+    /**
+     * Verschränkungs-Kaskade: when the selected Softwarestand IS entangled,
+     * the bulk write also applies to all sister Softwarestände that share its
+     * SE_TERMIN and have a Reifegrad ≥ the selected one. Excludes the selected
+     * itself (it's written directly). Returned sorted by reife ascending.
+     */
+    const cascadeIstufen = useMemo<IStufeMaster[]>(() => {
+        if (!currentEntanglement || !effectiveSelected) return [];
+        const selectedMaster = ISTUFE_MASTERS.find(m => m.istufe === effectiveSelected);
+        if (!selectedMaster) return [];
+        return ISTUFE_MASTERS
+            .filter(m =>
+                m.seTermin === selectedMaster.seTermin
+                && m.reife >= selectedMaster.reife
+                && m.istufe !== effectiveSelected,
+            )
+            .sort((a, b) => a.reife - b.reife);
+    }, [currentEntanglement, effectiveSelected]);
+
     const applyBulk = useCallback(() => {
         if (!effectiveSelected || !bulkLevel || affectedWeeks.length === 0) return;
 
@@ -1046,18 +1129,23 @@ export const FreigabeTimelinePage: React.FC = () => {
                         ?? (activeInWeek.findIndex(x => x.istufe === m.istufe) + 1)) === rank)
                     .map(m => m.istufe);
 
+                // Cascade sisters that are active in this week (only when entangled)
+                const cascadeForWeek = cascadeIstufen
+                    .filter(m => weekToIndex(m.atsWeek) <= wkIdx && wkIdx <= weekToIndex(m.sabWeek))
+                    .map(m => m.istufe);
+
+                // Dedupe targets (selected + group members + cascade sisters)
+                const targets = new Set<string>([effectiveSelected, ...groupMembers, ...cascadeForWeek]);
+
                 for (const hvsKey of bulkHvsSelection) {
-                    next[`${effectiveSelected}|${weekKey}|${hvsKey}`] = bulkLevel;
-                    for (const member of groupMembers) {
-                        if (member !== effectiveSelected) {
-                            next[`${member}|${weekKey}|${hvsKey}`] = bulkLevel;
-                        }
+                    for (const t of targets) {
+                        next[`${t}|${weekKey}|${hvsKey}`] = bulkLevel;
                     }
                 }
             }
             return next;
         });
-    }, [effectiveSelected, bulkLevel, bulkHvsSelection, affectedWeeks, allVisibleIStufen, istufeRank]);
+    }, [effectiveSelected, bulkLevel, bulkHvsSelection, affectedWeeks, allVisibleIStufen, istufeRank, cascadeIstufen]);
 
     const bulkCount = bulkHvsSelection.size;
     const bulkReady = !!effectiveSelected && !!bulkLevel && bulkCount > 0 && affectedWeeks.length > 0;
@@ -1210,10 +1298,20 @@ export const FreigabeTimelinePage: React.FC = () => {
                             <div className="ftl-bulk__entanglement">
                                 <span className="ftl-bulk__entanglement-icon" aria-hidden="true">🔗</span>
                                 <span>
-                                    <strong>{currentEntanglement.istufe}</strong> ist an
-                                    {' '}<strong>{currentEntanglement.speicher}</strong>
-                                    {' · '}<strong>{currentEntanglement.muster}</strong> verschränkt —
-                                    Freigaben gelten ausschließlich für diese Kombination.
+                                    <strong>{currentEntanglement.istufe}</strong> ist an Speicher
+                                    {' '}<strong>{currentEntanglement.speicher}</strong> verschränkt —
+                                    Freigaben gelten ausschließlich für diesen Speicher.
+                                    {cascadeIstufen.length > 0 && (
+                                        <>
+                                            {' '}Kaskadiert auf{' '}
+                                            {cascadeIstufen.map((m, i) => (
+                                                <React.Fragment key={m.istufe}>
+                                                    {i > 0 && ', '}<strong>{m.istufe}</strong>
+                                                </React.Fragment>
+                                            ))}
+                                            {' '}(Reifegrad ≥ {currentEntanglement.reife}).
+                                        </>
+                                    )}
                                 </span>
                             </div>
                         )}
@@ -1273,6 +1371,18 @@ export const FreigabeTimelinePage: React.FC = () => {
                                 <span className="ftl-bulk__confirm-label">Softwarestand:</span>
                                 <strong>{effectiveSelected}</strong>
                             </div>
+                            {currentEntanglement && cascadeIstufen.length > 0 && (
+                                <div className="ftl-bulk__confirm-row">
+                                    <span className="ftl-bulk__confirm-label">
+                                        Kaskade ({cascadeIstufen.length}):
+                                    </span>
+                                    <div className="ftl-bulk__confirm-weeks">
+                                        {cascadeIstufen.map(m => (
+                                            <span key={m.istufe} className="ftl-bulk__week-pill">{m.istufe}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             <div className="ftl-bulk__confirm-row">
                                 <span className="ftl-bulk__confirm-label">Wochen ({affectedWeeks.length}):</span>
                                 <div className="ftl-bulk__confirm-weeks">
@@ -1388,10 +1498,12 @@ export const FreigabeTimelinePage: React.FC = () => {
                                 {visibleActive.map(m => {
                                     const c = istufeColors.get(m.istufe)!;
                                     const isSelectedIstufe = effectiveSelected === m.istufe;
+                                    const status = SE_TERMIN_STATUS[m.seTermin];
                                     return (
                                         <div key={m.istufe}
-                                            className={`ftl-gantt__istufe-chip${isSelectedIstufe ? ' ftl-gantt__istufe-chip--selected' : ''}`}
+                                            className={`ftl-gantt__istufe-chip${isSelectedIstufe ? ' ftl-gantt__istufe-chip--selected' : ''}${status ? ` ftl-gantt__istufe-chip--${status}` : ''}`}
                                             style={{ backgroundColor: c.bar }}
+                                            title={status ? `${m.istufe} · ${SE_TERMIN_STATUS_LABEL[status]}` : m.istufe}
                                             onClick={() => selectIstufe(isSelectedIstufe ? null : m.istufe)}>
                                             <div className="ftl-gantt__istufe-top">
                                                 <label className="ftl-gantt__istufe-lead" onClick={e => e.stopPropagation()} title="Lead I-Stufe (für diese KW)">

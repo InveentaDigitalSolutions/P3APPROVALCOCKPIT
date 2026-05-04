@@ -159,6 +159,33 @@
     background: var(--bmw-blue-light); color: var(--bmw-blue);
 }
 
+/* Status chip in dropdown row */
+.ftl-istufe-filter__opt-status {
+    display: inline-flex; align-items: center; padding: 0 8px; height: 18px;
+    border-radius: 999px;
+    font-size: 0.6rem; font-weight: var(--font-bold);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    border: 1px solid;
+}
+.ftl-istufe-filter__opt-status--abgebrancht {
+    background: var(--bmw-blue-light); color: var(--bmw-blue); border-color: var(--bmw-blue);
+}
+.ftl-istufe-filter__opt-status--entwicklung {
+    background: var(--bmw-success-light); color: var(--bmw-success); border-color: var(--bmw-success);
+}
+.ftl-istufe-filter__opt-status--planung {
+    background: var(--bmw-warning-light); color: var(--bmw-warning); border-color: var(--bmw-warning);
+}
+
+/* Gantt chip status treatments — subtle, non-de-emphasizing */
+.ftl-gantt__istufe-chip--abgebrancht {
+    outline: 1px dashed rgba(255, 255, 255, 0.55);
+    outline-offset: -3px;
+}
+.ftl-gantt__istufe-chip--entwicklung {
+    box-shadow: 0 0 0 2px var(--bmw-success);
+}
+
 /* ── Filter Panel ── */
 .ftl-filters {
     display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;

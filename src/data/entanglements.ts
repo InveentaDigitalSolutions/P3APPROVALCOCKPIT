@@ -1,9 +1,10 @@
 /**
- * Verschränkungen — Softwarestand × (Speicher, Speichermuster) bindings.
+ * Verschränkungen — Softwarestand × Speicher bindings.
  *
  * An "entanglement" pins a specific ISTUFE (e.g. "26-07-510") to one
- * (Speicher, Muster) combination. Once entangled, every new Freigabe for
- * that Softwarestand should only target that combination.
+ * Speicher (HVS short code, e.g. "B6RO0"). Once entangled, every new
+ * Freigabe for that Softwarestand should only target HVS rows belonging
+ * to that Speicher.
  *
  * Persistence: localStorage for now. Promote to a Dataverse table
  * (`cr9b2_verschraenkungen` or similar) once the schema is agreed.
@@ -11,7 +12,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'freigabencockpit:entanglements:v2';
+const STORAGE_KEY = 'freigabencockpit:entanglements:v3';
 
 export interface Entanglement {
     /** Stable id (uuid-ish) */
@@ -24,8 +25,6 @@ export interface Entanglement {
     istufe: string;
     /** Speicher = HVS short code, e.g. "B6RO0" */
     speicher: string;
-    /** Speichermuster, e.g. "D1.0" */
-    muster: string;
     /** ISO timestamp when the binding was created */
     createdAt: string;
 }
@@ -76,8 +75,7 @@ export function useEntanglements() {
             ...input,
         };
         const current = readAll();
-        const dup = current.find(e =>
-            e.istufe === istufe && e.speicher === input.speicher && e.muster === input.muster);
+        const dup = current.find(e => e.istufe === istufe && e.speicher === input.speicher);
         if (dup) return null;  // duplicate
         const updated = [...current, next];
         writeAll(updated);

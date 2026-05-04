@@ -12,7 +12,6 @@ export const VerschraenkungenPage: React.FC = () => {
     const [seTermin, setSeTermin] = useState<string>('');
     const [reife, setReife] = useState<string>('');
     const [speicher, setSpeicher] = useState<string>('');
-    const [muster, setMuster] = useState<string>('');
     const [feedback, setFeedback] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
     /* ── Option lists ── */
@@ -32,36 +31,29 @@ export const VerschraenkungenPage: React.FC = () => {
         return [...new Set(HVS_DATA.map(h => h.hvs).filter(Boolean))].sort();
     }, []);
 
-    const musterOptions = useMemo(() => {
-        if (!speicher) return [] as string[];
-        return [...new Set(
-            HVS_DATA.filter(h => h.hvs === speicher).map(h => h.muster).filter(Boolean)
-        )].sort();
-    }, [speicher]);
-
     /* ── Derived ── */
     const istufeKey = seTermin && reife ? `${seTermin}-${reife}` : '';
     const istufeIsValid = istufeKey && ISTUFE_MASTERS.some(m => m.istufe === istufeKey);
-    const ready = !!istufeIsValid && !!speicher && !!muster;
+    const ready = !!istufeIsValid && !!speicher;
 
     const reset = () => {
-        setSeTermin(''); setReife(''); setSpeicher(''); setMuster('');
+        setSeTermin(''); setReife(''); setSpeicher('');
         setFeedback(null);
     };
 
     const handleSave = () => {
         if (!ready) return;
-        const created = add({ seTermin, reife: Number(reife), speicher, muster });
+        const created = add({ seTermin, reife: Number(reife), speicher });
         if (!created) {
             setFeedback({ kind: 'error', text: 'Diese Verschränkung existiert bereits.' });
             return;
         }
         setFeedback({
             kind: 'ok',
-            text: `Verschränkung gespeichert: ${created.istufe} → ${created.speicher} · ${created.muster}`,
+            text: `Verschränkung gespeichert: ${created.istufe} → ${created.speicher}`,
         });
-        // Keep the istufe selection in case the user wants to add more for the same Softwarestand
-        setMuster('');
+        // Keep the istufe selection in case the user wants to add another binding for the same Softwarestand
+        setSpeicher('');
     };
 
     /* ── Group existing entanglements by istufe for display ── */
@@ -82,8 +74,8 @@ export const VerschraenkungenPage: React.FC = () => {
                 <div>
                     <h1 className="vs-page__title">Verschränkungen</h1>
                     <p className="vs-page__subtitle">
-                        Softwarestand an Speicher und Speichermuster binden — alle künftigen
-                        Freigaben gelten dann ausschließlich für diese Kombination
+                        Softwarestand an einen Speicher binden — alle künftigen Freigaben
+                        gelten dann ausschließlich für diesen Speicher
                     </p>
                 </div>
             </div>
@@ -131,24 +123,9 @@ export const VerschraenkungenPage: React.FC = () => {
                         <select className="vs-select"
                             value={speicher}
                             disabled={!reife}
-                            onChange={e => { setSpeicher(e.target.value); setMuster(''); setFeedback(null); }}>
+                            onChange={e => { setSpeicher(e.target.value); setFeedback(null); }}>
                             <option value="">{reife ? '— wählen —' : 'Zuerst Reifegrad wählen'}</option>
                             {speicherOptions.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                    </div>
-
-                    {/* Step 4: Speichermuster */}
-                    <div className="vs-field">
-                        <label className="vs-field__label">
-                            <span className="vs-field__step">4</span>
-                            Speichermuster
-                        </label>
-                        <select className="vs-select"
-                            value={muster}
-                            disabled={!speicher}
-                            onChange={e => { setMuster(e.target.value); setFeedback(null); }}>
-                            <option value="">{speicher ? '— wählen —' : 'Zuerst Speicher wählen'}</option>
-                            {musterOptions.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                     </div>
                 </div>
@@ -161,8 +138,6 @@ export const VerschraenkungenPage: React.FC = () => {
                         <span className="vs-builder__preview-arrow">→</span>
                         <span className="vs-builder__preview-target">
                             <strong>{speicher}</strong>
-                            <span className="vs-builder__preview-sep">·</span>
-                            <strong>{muster}</strong>
                         </span>
                     </div>
                 )}
@@ -196,7 +171,7 @@ export const VerschraenkungenPage: React.FC = () => {
 
                 {entanglements.length === 0 ? (
                     <div className="vs-list__empty">
-                        Noch keine Verschränkungen. Wähle oben einen Softwarestand und ein Speichermuster, um zu beginnen.
+                        Noch keine Verschränkungen. Wähle oben einen Softwarestand und einen Speicher, um zu beginnen.
                     </div>
                 ) : (
                     <div className="vs-list__groups">
@@ -213,8 +188,6 @@ export const VerschraenkungenPage: React.FC = () => {
                                         <div key={e.id} className="vs-item">
                                             <div className="vs-item__target">
                                                 <span className="vs-item__speicher">{e.speicher}</span>
-                                                <span className="vs-item__sep">·</span>
-                                                <span className="vs-item__muster">{e.muster}</span>
                                             </div>
                                             <div className="vs-item__meta">
                                                 {new Date(e.createdAt).toLocaleString('de-DE', {
