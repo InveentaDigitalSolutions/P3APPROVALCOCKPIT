@@ -8,6 +8,8 @@ import type { PenthouseTicket } from '../data/plannedComponentApprovals';
 import { VERBUND_TICKETS_BY_YEARWEEK, VERBUND_TICKETS } from '../data/verbundfreigaben';
 import type { VerbundTicket } from '../data/verbundfreigaben';
 import { useEntanglements } from '../data/entanglements';
+import { useWmm, WMM_STATUS_LABEL } from '../data/wmm';
+import type { WmmRecord, WmmStatus, Sachnummer } from '../data/wmm';
 import {
     getISOWeek,
     getISOWeekYear,
@@ -488,6 +490,174 @@ const VerbundDrawerFields: React.FC<{ ticket: VerbundTicket }> = ({ ticket }) =>
 );
 
 /* ══════════════════════════════════════════════════════
+   WMM detail drawer (simulated)
+   ══════════════════════════════════════════════════════ */
+
+const WmmDrawer: React.FC<{
+    hvsKey: string;
+    record: WmmRecord | undefined;
+    onClose: () => void;
+    onCheck: () => void;
+    onApplyDelta: () => void;
+    onDismissDelta: () => void;
+    onToggleDeactivated: () => void;
+    onAddSachnummer: (sn: Sachnummer) => void;
+    onRemoveSachnummer: (nummer: string) => void;
+}> = ({ hvsKey, record, onClose, onCheck, onApplyDelta, onDismissDelta, onToggleDeactivated, onAddSachnummer, onRemoveSachnummer }) => {
+    const [newNummer, setNewNummer] = useState('');
+    const [newType, setNewType] = useState('');
+    const [newLabel, setNewLabel] = useState('');
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [onClose]);
+
+    if (!record) return null;
+    const status = record.status;
+    const lastChecked = record.lastCheckedAt
+        ? new Date(record.lastCheckedAt).toLocaleString('de-DE', {
+            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
+        })
+        : 'noch nie';
+
+    const handleAdd = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newNummer.trim()) return;
+        onAddSachnummer({ nummer: newNummer.trim(), type: newType.trim() || '—', label: newLabel.trim() || newNummer.trim() });
+        setNewNummer(''); setNewType(''); setNewLabel('');
+    };
+
+    return (
+        <>
+            <div className="ftl-drawer-backdrop" onClick={onClose} />
+            <aside className="ftl-wmm-drawer" role="dialog" aria-label="WMM Details">
+                <header className="ftl-wmm-drawer__header">
+                    <div>
+                        <div className="ftl-wmm-drawer__kicker">WMM · {hvsKey}</div>
+                        <div className="ftl-wmm-drawer__title">{record.zsmbId}</div>
+                    </div>
+                    <button className="ftl-wmm-drawer__close" onClick={onClose} aria-label="Close">×</button>
+                </header>
+
+                <div className="ftl-wmm-drawer__body">
+                    {/* Top row — link + status + last check */}
+                    <div className="ftl-wmm-drawer__row">
+                        <span className="ftl-wmm-drawer__label">ZSMB</span>
+                        <a className="ftl-wmm-drawer__link" href={record.zsmbUrl} target="_blank" rel="noopener noreferrer">
+                            {record.zsmbUrl} ↗
+                        </a>
+                    </div>
+                    <div className="ftl-wmm-drawer__row">
+                        <span className="ftl-wmm-drawer__label">Status</span>
+                        <span className={`ftl-wmm-drawer__status ftl-wmm-drawer__status--${status}`}>
+                            {WMM_STATUS_LABEL[status]}
+                        </span>
+                    </div>
+                    <div className="ftl-wmm-drawer__row">
+                        <span className="ftl-wmm-drawer__label">Letzte Prüfung</span>
+                        <span className="ftl-wmm-drawer__value">{lastChecked}</span>
+                    </div>
+
+                    {/* Pending delta banner */}
+                    {record.pendingDelta && (
+                        <div className="ftl-wmm-drawer__delta">
+                            <div className="ftl-wmm-drawer__delta-title">
+                                Delta aus BATKAS / IHP
+                            </div>
+                            {record.pendingDelta.added.length > 0 && (
+                                <div className="ftl-wmm-drawer__delta-section">
+                                    <span className="ftl-wmm-drawer__delta-label ftl-wmm-drawer__delta-label--added">
+                                        + Neu ({record.pendingDelta.added.length})
+                                    </span>
+                                    {record.pendingDelta.added.map(s => (
+                                        <span key={s.nummer} className="ftl-wmm-drawer__delta-item">{s.nummer}</span>
+                                    ))}
+                                </div>
+                            )}
+                            {record.pendingDelta.removed.length > 0 && (
+                                <div className="ftl-wmm-drawer__delta-section">
+                                    <span className="ftl-wmm-drawer__delta-label ftl-wmm-drawer__delta-label--removed">
+                                        − Entfernt ({record.pendingDelta.removed.length})
+                                    </span>
+                                    {record.pendingDelta.removed.map(s => (
+                                        <span key={s.nummer} className="ftl-wmm-drawer__delta-item">{s.nummer}</span>
+                                    ))}
+                                </div>
+                            )}
+                            {record.pendingDelta.changed.length > 0 && (
+                                <div className="ftl-wmm-drawer__delta-section">
+                                    <span className="ftl-wmm-drawer__delta-label ftl-wmm-drawer__delta-label--changed">
+                                        ~ Geändert ({record.pendingDelta.changed.length})
+                                    </span>
+                                    {record.pendingDelta.changed.map(c => (
+                                        <span key={c.before.nummer} className="ftl-wmm-drawer__delta-item">
+                                            {c.before.nummer}: „{c.before.label}" → „{c.after.label}"
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="ftl-wmm-drawer__delta-actions">
+                                <button className="btn btn--ghost btn--sm" onClick={onDismissDelta}>Verwerfen</button>
+                                <button className="btn btn--primary btn--sm" onClick={onApplyDelta}>Übernehmen</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Sachnummern */}
+                    <div className="ftl-wmm-drawer__section">
+                        <div className="ftl-wmm-drawer__section-title">
+                            Sachnummern <span className="ftl-wmm-drawer__count">({record.sachnummern.length})</span>
+                        </div>
+                        {record.sachnummern.length === 0 && (
+                            <div className="ftl-wmm-drawer__empty">
+                                Noch keine Sachnummern. Trage sie unten ein oder klicke „WMM Check".
+                            </div>
+                        )}
+                        <div className="ftl-wmm-drawer__sn-list">
+                            {record.sachnummern.map(s => (
+                                <div key={s.nummer} className="ftl-wmm-drawer__sn-row">
+                                    <span className="ftl-wmm-drawer__sn-nummer">{s.nummer}</span>
+                                    <span className="ftl-wmm-drawer__sn-type">{s.type}</span>
+                                    <span className="ftl-wmm-drawer__sn-label">{s.label}</span>
+                                    <button className="ftl-wmm-drawer__sn-del"
+                                        onClick={() => onRemoveSachnummer(s.nummer)}
+                                        title="Sachnummer entfernen" aria-label="Sachnummer entfernen">
+                                        ✕
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                        <form className="ftl-wmm-drawer__sn-add" onSubmit={handleAdd}>
+                            <input className="ftl-wmm-drawer__input" placeholder="Sachnummer (z. B. 83 21 7 …)"
+                                value={newNummer} onChange={e => setNewNummer(e.target.value)} />
+                            <input className="ftl-wmm-drawer__input ftl-wmm-drawer__input--sm" placeholder="Typ"
+                                value={newType} onChange={e => setNewType(e.target.value)} />
+                            <input className="ftl-wmm-drawer__input" placeholder="Beschreibung"
+                                value={newLabel} onChange={e => setNewLabel(e.target.value)} />
+                            <button className="btn btn--primary btn--sm" type="submit" disabled={!newNummer.trim()}>
+                                + Hinzufügen
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <footer className="ftl-wmm-drawer__footer">
+                    <button className={`btn btn--ghost btn--sm`}
+                        onClick={onToggleDeactivated}>
+                        {status === 'deactivated' ? 'Reaktivieren' : 'Deaktivieren'}
+                    </button>
+                    <button className="btn btn--primary" onClick={onCheck}>
+                        WMM Check
+                    </button>
+                </footer>
+            </aside>
+        </>
+    );
+};
+
+/* ══════════════════════════════════════════════════════
    ISTUFE filter dropdown (multi-select by SE_TERMIN)
    ══════════════════════════════════════════════════════ */
 
@@ -853,6 +1023,10 @@ export const FreigabeTimelinePage: React.FC = () => {
 
     /* ── Entanglements (Verschränkungen): pin a Softwarestand to (Speicher, Muster) ── */
     const { findByIstufe } = useEntanglements();
+
+    /* ── WMM (simulated) ── */
+    const wmm = useWmm();
+    const [wmmOpenKey, setWmmOpenKey] = useState<string | null>(null);
     const currentEntanglement = useMemo(
         () => (effectiveSelected ? findByIstufe(effectiveSelected) : undefined),
         [effectiveSelected, findByIstufe],
@@ -1070,6 +1244,74 @@ export const FreigabeTimelinePage: React.FC = () => {
         setBulkHvsSelection(new Set());
     }, []);
 
+    /* ── Penthouse selector for the bulk panel — group quick-toggle for HVS ── */
+    const [bulkPenthouses, setBulkPenthouses] = useState<Set<string>>(new Set());
+
+    /** Penthouses available to pick — derived from the HVS rows visible in the bulk panel. */
+    const bulkPenthouseOptions = useMemo(
+        () => [...new Set(bulkVisibleHvs.map(h => h.penthouse).filter(Boolean))].sort(),
+        [bulkVisibleHvs],
+    );
+
+    /* Drop selected penthouses that are no longer present in the bulk visible set. */
+    useEffect(() => {
+        const allowed = new Set(bulkPenthouseOptions);
+        setBulkPenthouses(prev => {
+            let changed = false;
+            const next = new Set<string>();
+            for (const p of prev) {
+                if (allowed.has(p)) next.add(p);
+                else changed = true;
+            }
+            return changed ? next : prev;
+        });
+    }, [bulkPenthouseOptions]);
+
+    /** Toggle a penthouse: also auto-select / auto-deselect the HVS rows in it. */
+    const toggleBulkPenthouse = useCallback((penthouse: string) => {
+        const hvsKeysInPenthouse = bulkVisibleHvs
+            .filter(h => h.penthouse === penthouse && (hvsActive[h.key] ?? true))
+            .map(h => h.key);
+
+        setBulkPenthouses(prev => {
+            const next = new Set(prev);
+            const wasOn = next.has(penthouse);
+            if (wasOn) next.delete(penthouse);
+            else next.add(penthouse);
+            return next;
+        });
+        setBulkHvsSelection(prev => {
+            const next = new Set(prev);
+            const turningOn = !bulkPenthouses.has(penthouse);
+            for (const k of hvsKeysInPenthouse) {
+                if (turningOn) next.add(k);
+                else next.delete(k);
+            }
+            return next;
+        });
+    }, [bulkVisibleHvs, bulkPenthouses, hvsActive]);
+
+    const selectAllBulkPenthouses = useCallback(() => {
+        setBulkPenthouses(new Set(bulkPenthouseOptions));
+        setBulkHvsSelection(new Set(
+            bulkVisibleHvs.filter(h => hvsActive[h.key] ?? true).map(h => h.key),
+        ));
+    }, [bulkPenthouseOptions, bulkVisibleHvs, hvsActive]);
+
+    const clearBulkPenthouses = useCallback(() => {
+        const inAnyPenthouse = new Set(
+            bulkVisibleHvs
+                .filter(h => h.penthouse && bulkPenthouses.has(h.penthouse))
+                .map(h => h.key),
+        );
+        setBulkPenthouses(new Set());
+        setBulkHvsSelection(prev => {
+            const next = new Set(prev);
+            for (const k of inAnyPenthouse) next.delete(k);
+            return next;
+        });
+    }, [bulkPenthouses, bulkVisibleHvs]);
+
     /** Weeks in the current view where the selected ISTUFE is active */
     const availableWeeks = useMemo(() => {
         if (!effectiveSelected) return [] as string[];
@@ -1283,10 +1525,39 @@ export const FreigabeTimelinePage: React.FC = () => {
                         )}
                     </section>
 
-                    {/* Step 2: HVS selection */}
+                    {/* Step 2: Penthouse selection (group selector for HVS) */}
                     <section className="ftl-bulk__section">
                         <div className="ftl-bulk__section-title">
                             <span className="ftl-bulk__step">2</span>
+                            Penthouse auswählen
+                            <span className="ftl-bulk__count-pill">{bulkPenthouses.size}</span>
+                            <div className="ftl-bulk__hvs-actions">
+                                <button className="btn btn--ghost btn--sm" onClick={selectAllBulkPenthouses}>Alle</button>
+                                <button className="btn btn--ghost btn--sm" onClick={clearBulkPenthouses}>Keine</button>
+                            </div>
+                        </div>
+                        <div className="ftl-bulk__hvs-list">
+                            {bulkPenthouseOptions.length === 0 && (
+                                <span className="ftl-bulk__no-weeks">Keine Penthouses im aktuellen Filter</span>
+                            )}
+                            {bulkPenthouseOptions.map(p => {
+                                const isChecked = bulkPenthouses.has(p);
+                                return (
+                                    <label key={p}
+                                        className={`ftl-bulk__hvs-item${isChecked ? ' ftl-bulk__hvs-item--checked' : ''}`}>
+                                        <input type="checkbox" checked={isChecked}
+                                            onChange={() => toggleBulkPenthouse(p)} />
+                                        <span className="ftl-bulk__hvs-name">{p}</span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </section>
+
+                    {/* Step 3: HVS selection */}
+                    <section className="ftl-bulk__section">
+                        <div className="ftl-bulk__section-title">
+                            <span className="ftl-bulk__step">3</span>
                             HVS auswählen
                             <span className="ftl-bulk__count-pill">{bulkCount}</span>
                             <div className="ftl-bulk__hvs-actions">
@@ -1631,7 +1902,19 @@ export const FreigabeTimelinePage: React.FC = () => {
                                 <span className="ftl-gantt__hvs-speicher">{hvs.speicher}</span>
                             </div>
                             <div className="ftl-gantt__hvs-links">
-                                <span className="ftl-gantt__link ftl-gantt__link--wmm">WMM</span>
+                                {(() => {
+                                    const w = wmm.records[hvs.key];
+                                    const status: WmmStatus = w?.status ?? 'missing-zsmb';
+                                    return (
+                                        <button type="button"
+                                            className={`ftl-gantt__link ftl-gantt__link--wmm ftl-gantt__link--status-${status}`}
+                                            onClick={() => setWmmOpenKey(hvs.key)}
+                                            title={`WMM: ${WMM_STATUS_LABEL[status]}`}>
+                                            <span className="ftl-gantt__link-dot" aria-hidden="true" />
+                                            WMM
+                                        </button>
+                                    );
+                                })()}
                                 <span className="ftl-gantt__link ftl-gantt__link--mia">MIA</span>
                             </div>
                         </div>
@@ -1813,6 +2096,21 @@ export const FreigabeTimelinePage: React.FC = () => {
                     })}
                 </div>
             </div>
+
+            {/* WMM detail drawer */}
+            {wmmOpenKey && (
+                <WmmDrawer
+                    hvsKey={wmmOpenKey}
+                    record={wmm.records[wmmOpenKey]}
+                    onClose={() => setWmmOpenKey(null)}
+                    onCheck={() => wmm.runWmmCheck(wmmOpenKey)}
+                    onApplyDelta={() => wmm.applyDelta(wmmOpenKey)}
+                    onDismissDelta={() => wmm.dismissDelta(wmmOpenKey)}
+                    onToggleDeactivated={() => wmm.toggleDeactivated(wmmOpenKey)}
+                    onAddSachnummer={(sn) => wmm.addSachnummer(wmmOpenKey, sn)}
+                    onRemoveSachnummer={(nummer) => wmm.removeSachnummer(wmmOpenKey, nummer)}
+                />
+            )}
 
         </div>
     );
