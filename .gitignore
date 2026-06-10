@@ -30,3 +30,7 @@ docs/dataflow/
 *.njsproj
 *.sln
 *.sw?
+
+# Lastenheft build intermediates (regenerable from LASTENHEFT.md + scripts/)
+docs/LASTENHEFT.html
+docs/*.word.html
