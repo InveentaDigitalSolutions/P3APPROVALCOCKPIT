@@ -20,36 +20,43 @@
 
 ## Executive Summary
 
-**Ausgangslage & Auftrag.** Die Software-Freigabe der BMW-Hochvoltspeicher (HVS) in der Abteilung ES-6 wird
-heute in einer manuell gepflegten Excel-Datei verfolgt — nicht mehrbenutzerfähig, fehleranfällig und von den
-Quellsystemen (IP3/CDH, Stücklisten, DEEP, WMM, Jira, MIA) entkoppelt. P3 Group wurde beauftragt, diese durch
-die Anwendung **FreigabecockpitNEXT** zu ersetzen: eine zentrale, in Microsoft Dataverse verankerte App, die
-Daten automatisiert aus den Quellsystemen bezieht, die Freigabetermine im User-Interface bestätigen lässt und
-anschließend die nachgelagerten Zielsysteme befüllt.
+Die Freigabe der **Hochvoltspeicher-Software (HVS)** in der BMW-Abteilung ES-6 läuft heute über eine manuell
+gepflegte Excel-Datei: einzelplatzgebunden, fehleranfällig und ohne Verbindung zu den Systemen, in denen die
+maßgeblichen Termine, Stücklisten und Freigaben tatsächlich entstehen. P3 Group wurde beauftragt, diesen
+Prozess durch die Anwendung **FreigabecockpitNEXT** abzulösen und schrittweise zu automatisieren.
 
-**Was P3 Group geliefert hat.** Im bisherigen Leistungsumfang von **65 Personentagen** wurden erbracht:
+**Das Ergebnis auf den Punkt:** In **65 Personentagen** liegt ein **lauffähiger, mehrbenutzerfähiger
+Prototyp** auf Basis von Microsoft Power Apps und Dataverse vor, der den **kompletten internen Planungs- und
+Freigabeprozess** abbildet — flankiert von einer **vollständigen fachlichen Spezifikation und Architektur**,
+mit der die Lösung in den Folgephasen durchgängig automatisiert wird. ES-6 verfügt damit heute über ein
+vorzeigbares Werkzeug **und** einen belastbaren Bauplan für den Weg zum Produktivsystem.
 
-- **Vollständige Anforderungsaufnahme & Spezifikation** — das vorliegende Lastenheft mit Datenmodell,
-  Quell-/Zielsystem-Landschaft, vollständigem Kundenanforderungskatalog inkl. Umsetzungsbewertung und dem
-  Epic-/Feature-Backlog (E0–E7).
-- **Lauffähiger App-Prototyp** (Power Apps Code App auf Microsoft Dataverse) mit vier Arbeitsbereichen:
-  aktionsorientiertes **Cockpit**, **Freigabe-Timeline** (Gantt-Übersicht), **Verschränkungen** und
-  **Dataverse-Verwaltung**.
-- **Automatisierte Datenpipeline „FGC_DATA"** — ETL der Quelldaten (IP3, Stücklisten, DEEP) nach Dataverse,
-  inklusive Kalenderwochen- und I-Stufen-Logik.
-- **Kern-Funktionalität der Freigabeplanung**: Übersichtsgrid (HVS × Kalenderwoche), komplexe Live-Filterung,
-  Batch-Change / Bulk-Freigabe, Terminverschiebung, Soll-/Ist-Verfolgung sowie die WMM-Prüf- und Delta-Logik.
-- **Visuelle Architektur**: Datenmodell als ER-Diagramm (Abb. 1) und End-to-End-Prozessskizze (Abb. 2).
+**Was die Anwendung heute leistet — anstelle der manuellen Excel-Pflege:**
 
-**Umsetzungsstand.** Der gesamte **interne Planungs- und Pflege-Kern** ist umgesetzt und demonstrierbar. Die
-Funktionen, die eine **produktive Live-Anbindung externer Systeme** voraussetzen — WMM/BATKAS·IHP, IP3-Polling,
-Jira-Ticketerzeugung und MIA-Anlagen — sind fachlich vollständig spezifiziert und im UI vorbereitet, ihre
-Aktivierung hängt jedoch an den noch herzustellenden Systemzugängen. Die offenen Punkte sind damit **nicht
-durch die Anwendung limitiert, sondern durch die externen Schnittstellen** (Details in §9 und §11).
+- **Gesamtüberblick statt Tabellenpflege:** alle Hochvoltspeicher über die Kalenderwochen hinweg in einem
+  Raster, mit farblicher I-Stufen-Logik und komplexer Live-Filterung nach I-Stufen, Wochen, Speichern und
+  Penthouse.
+- **Freigaben in Sekunden statt Zelle für Zelle:** Massen-Freigabe (Batch-Change) über viele Speicher und
+  Wochen mit Verschränkungs- und Kaskadenlogik, dazu Terminverschiebung per Klick und durchgängige
+  Soll-/Ist-Verfolgung.
+- **Automatische Datenversorgung:** die Datenstrecke **„FGC_DATA"** überführt die Planungsdaten aus IP3,
+  Stücklisten und DEEP automatisiert nach Dataverse — ohne manuelles Übertragen.
+- **Integrierte Qualitätssicherung:** WMM-Prüfung mit Delta-Erkennung (geänderte, neue und entfallene
+  Sachnummern) direkt in der Oberfläche.
 
-**Erbrachte Leistung nach Liefergegenständen.** Der Leistungsumfang verteilt sich auf
-**Requirements Engineering (31 Tage)**, **Solution Architecture (32 Tage)** und einen gemeinsamen
-**Designworkshop (2 Tage)** — in Summe **65 Tage**:
+**Was darüber hinaus vollständig spezifiziert ist:** Dieses Lastenheft dokumentiert das gesamte Zielbild —
+Datenmodell (ER-Diagramm, Abb. 1), Quell-/Zielsystem-Landschaft (Prozessskizze, Abb. 2), den **bewerteten
+Kundenanforderungskatalog** sowie das **Epic-/Feature-Backlog (E0–E7)**. Die Lösung ist damit nicht nur
+gebaut, sondern auch nachvollziehbar dokumentiert und planbar erweiterbar.
+
+**Umsetzungsstand — klar und ehrlich:** Der interne Planungs- und Freigabekern ist **umgesetzt und
+demonstrierbar**. Alle Funktionen, die einen **produktiven Live-Zugriff auf externe BMW-Systeme** voraussetzen
+(WMM/BATKAS·IHP, IP3, Jira CodeCraft, MIA), sind fachlich spezifiziert und in der Oberfläche vorbereitet; ihre
+Aktivierung hängt allein an der Bereitstellung der jeweiligen Schnittstellen. **Der offene Umfang ist damit
+nicht durch die Anwendung bedingt, sondern durch die externen Systemzugänge** (Details in §9 und §11).
+
+**Erbrachte Leistung nach Liefergegenständen** — verteilt auf Requirements Engineering (31 Tage), Solution
+Architecture (32 Tage) und einen gemeinsamen Designworkshop (2 Tage), in Summe **65 Tage**:
 
 | Liefergegenstand | Aufwand | Rolle |
 |---|---|---|
@@ -63,9 +70,9 @@ durch die Anwendung limitiert, sondern durch die externen Schnittstellen** (Deta
 | Designworkshop | 2 Tage | Senior Solution Architect / Senior Requirement Engineer |
 | **Gesamtaufwendungen** | **65 Tage** | |
 
-**Ausblick.** Mit der abgestimmten Spezifikation und dem lauffähigen Prototyp ist die Grundlage gelegt, um in
-der Folgephase die externen Schnittstellen (CDH, Jira, MIA, WMM) anzubinden und die Automatisierung
-durchgängig (end-to-end) zu produktivieren.
+**Nächster Schritt:** Auf Basis von Prototyp und Spezifikation bindet die Folgephase die externen
+Schnittstellen (CDH, Jira, MIA, WMM) an — so wird aus dem heutigen Prototyp die durchgängig automatisierte,
+produktive Lösung.
 
 ---
 
