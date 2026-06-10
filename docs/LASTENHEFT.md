@@ -18,6 +18,57 @@
 
 ---
 
+## Executive Summary
+
+**Ausgangslage & Auftrag.** Die Software-Freigabe der BMW-Hochvoltspeicher (HVS) in der Abteilung ES-6 wird
+heute in einer manuell gepflegten Excel-Datei verfolgt — nicht mehrbenutzerfähig, fehleranfällig und von den
+Quellsystemen (IP3/CDH, Stücklisten, DEEP, WMM, Jira, MIA) entkoppelt. P3 Group wurde beauftragt, diese durch
+die Anwendung **FreigabecockpitNEXT** zu ersetzen: eine zentrale, in Microsoft Dataverse verankerte App, die
+Daten automatisiert aus den Quellsystemen bezieht, die Freigabetermine im User-Interface bestätigen lässt und
+anschließend die nachgelagerten Zielsysteme befüllt.
+
+**Was P3 Group geliefert hat.** Im bisherigen Leistungsumfang von **65 Personentagen** wurden erbracht:
+
+- **Vollständige Anforderungsaufnahme & Spezifikation** — das vorliegende Lastenheft mit Datenmodell,
+  Quell-/Zielsystem-Landschaft, vollständigem Kundenanforderungskatalog inkl. Umsetzungsbewertung und dem
+  Epic-/Feature-Backlog (E0–E7).
+- **Lauffähiger App-Prototyp** (Power Apps Code App auf Microsoft Dataverse) mit vier Arbeitsbereichen:
+  aktionsorientiertes **Cockpit**, **Freigabe-Timeline** (Gantt-Übersicht), **Verschränkungen** und
+  **Dataverse-Verwaltung**.
+- **Automatisierte Datenpipeline „FGC_DATA"** — ETL der Quelldaten (IP3, Stücklisten, DEEP) nach Dataverse,
+  inklusive Kalenderwochen- und I-Stufen-Logik.
+- **Kern-Funktionalität der Freigabeplanung**: Übersichtsgrid (HVS × Kalenderwoche), komplexe Live-Filterung,
+  Batch-Change / Bulk-Freigabe, Terminverschiebung, Soll-/Ist-Verfolgung sowie die WMM-Prüf- und Delta-Logik.
+- **Visuelle Architektur**: Datenmodell als ER-Diagramm (Abb. 1) und End-to-End-Prozessskizze (Abb. 2).
+
+**Umsetzungsstand.** Der gesamte **interne Planungs- und Pflege-Kern** ist umgesetzt und demonstrierbar. Die
+Funktionen, die eine **produktive Live-Anbindung externer Systeme** voraussetzen — WMM/BATKAS·IHP, IP3-Polling,
+Jira-Ticketerzeugung und MIA-Anlagen — sind fachlich vollständig spezifiziert und im UI vorbereitet, ihre
+Aktivierung hängt jedoch an den noch herzustellenden Systemzugängen. Die offenen Punkte sind damit **nicht
+durch die Anwendung limitiert, sondern durch die externen Schnittstellen** (Details in §9 und §11).
+
+**Erbrachte Leistung nach Liefergegenständen.** Der Leistungsumfang verteilt sich auf
+**Requirements Engineering (31 Tage)**, **Solution Architecture (32 Tage)** und einen gemeinsamen
+**Designworkshop (2 Tage)** — in Summe **65 Tage**:
+
+| Liefergegenstand | Aufwand | Rolle |
+|---|---|---|
+| Projektanalyse und -planung | 5 Tage | Senior Requirement Engineer |
+| Projektmanagement | 2 Tage | Senior Requirement Engineer |
+| Anforderungsaufnahme und Backlogmanagement | 17 Tage | Senior Requirement Engineer |
+| Schnittstellen- und Systemsondierungen | 7 Tage | Senior Requirement Engineer |
+| Mockup-Erstellung initiales Konzept | 5 Tage | Senior Solution Architect |
+| Data Engineering und Backend-Konfiguration | 4 Tage | Senior Solution Architect |
+| Frontend-Erstellung – iteratives Mockup-Konzept | 23 Tage | Senior Solution Architect |
+| Designworkshop | 2 Tage | Senior Solution Architect / Senior Requirement Engineer |
+| **Gesamtaufwendungen** | **65 Tage** | |
+
+**Ausblick.** Mit der abgestimmten Spezifikation und dem lauffähigen Prototyp ist die Grundlage gelegt, um in
+der Folgephase die externen Schnittstellen (CDH, Jira, MIA, WMM) anzubinden und die Automatisierung
+durchgängig (end-to-end) zu produktivieren.
+
+---
+
 ## 1. Zweck, Kontext & Zielsetzung
 
 ### 1.1 Ausgangslage
