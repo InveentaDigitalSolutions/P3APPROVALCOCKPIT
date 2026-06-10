@@ -31,6 +31,8 @@ export interface PenthouseTicket {
     parentJiraIssue: string;
     /** e.g. ["PTH-06"] */
     parentBranches: string[];
+    /** Software level offset, e.g. "ATS", "ATS+4", "ATS-2". May be empty. */
+    softwarestand: string;
     /** ISO week string, e.g. "2026-10" */
     yearWeek: string;
     /** ISO week number 1-53 */
@@ -48,6 +50,7 @@ interface PcaJsonRow {
     cr9b2_ilevelnames?: string;
     cr9b2_parentjiraissue?: string;
     cr9b2_parentbranches?: string;
+    cr9b2_softwarestand?: string;
     cr9b2_kw?: string | number;
     cr9b2_year?: string | number;
     cr9b2_yearweek?: string;
@@ -91,6 +94,7 @@ function buildTickets(): PenthouseTicket[] {
             iLevelNames: parseJsonArray(r.cr9b2_ilevelnames),
             parentJiraIssue: r.cr9b2_parentjiraissue ?? '',
             parentBranches: parseJsonArray(r.cr9b2_parentbranches),
+            softwarestand: (r.cr9b2_softwarestand ?? '').trim(),
             yearWeek: r.cr9b2_yearweek ?? '',
             kw: parseNum(r.cr9b2_kw),
             year: parseNum(r.cr9b2_year),

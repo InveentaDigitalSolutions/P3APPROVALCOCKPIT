@@ -100,7 +100,8 @@ const TABLE_ATTRS = {
     cr9b2_planned_component_approvals: [
         'cr9b2_jirakey', 'cr9b2_jiraurl', 'cr9b2_name', 'cr9b2_duedate',
         'cr9b2_ilevelnames', 'cr9b2_parentjiraissue', 'cr9b2_parentbranches',
-        'cr9b2_brvs', 'cr9b2_sops', 'cr9b2_kw', 'cr9b2_year', 'cr9b2_yearweek',
+        'cr9b2_brvs', 'cr9b2_sops', 'cr9b2_softwarestand',
+        'cr9b2_kw', 'cr9b2_year', 'cr9b2_yearweek',
     ],
     cr9b2_cdh_ip3: [
         'cr9b2_key', 'cr9b2_name', 'cr9b2_name_3', 'cr9b2_sollfreigabe',

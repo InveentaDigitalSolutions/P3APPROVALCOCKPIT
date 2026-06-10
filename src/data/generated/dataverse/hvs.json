@@ -1,27 +1,5 @@
 [
   {
-    "_id": "2eda549c-fe3e-f111-bec6-7ced8d4a3175",
-    "key": "P-114758-EBG_I",
-    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
-    "pnummer": "P-114758",
-    "wbsType": "EBG_I",
-    "muster": "A1.0",
-    "penthouse": "C09-HP",
-    "bauphase": "EGB1.1",
-    "monatjahr": "Aug-27"
-  },
-  {
-    "_id": "30da549c-fe3e-f111-bec6-7ced8d4a3175",
-    "key": "P-114758-BBG_II",
-    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
-    "pnummer": "P-114758",
-    "wbsType": "BBG_II",
-    "muster": "B2.0",
-    "penthouse": "C2-HP",
-    "bauphase": "BBG2.1",
-    "monatjahr": "Aug-27"
-  },
-  {
     "_id": "cc8ee297-fe3e-f111-bec6-7c1e52873f9b",
     "key": "P-114758-BBG_I",
     "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
@@ -33,14 +11,25 @@
     "monatjahr": "Aug-27"
   },
   {
-    "_id": "2fda549c-fe3e-f111-bec6-7ced8d4a3175",
-    "key": "P-114758-VS1_I",
-    "speichertyp": "B6RO0 -002 | RR XL | HP-PH",
+    "_id": "2eda549c-fe3e-f111-bec6-7ced8d4a3175",
+    "key": "P-114758-EBG_I",
+    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
     "pnummer": "P-114758",
-    "wbsType": "VS1_I",
-    "muster": "D1.2",
-    "penthouse": "D-HP Cost Down",
-    "bauphase": "VS4.2",
+    "wbsType": "EBG_I",
+    "muster": "A1.0",
+    "penthouse": "C09-HP",
+    "bauphase": "EGB1.1",
+    "monatjahr": "Aug-27"
+  },
+  {
+    "_id": "0503f29b-fe3e-f111-bec6-7ced8d4a3506",
+    "key": "P-114758-PVL_I",
+    "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "PVL_I",
+    "muster": "C1.0",
+    "penthouse": "D-HP",
+    "bauphase": "PVL3.1/VS0 &VS1",
     "monatjahr": "Aug-27"
   },
   {
@@ -55,14 +44,25 @@
     "monatjahr": "Aug-27"
   },
   {
-    "_id": "0503f29b-fe3e-f111-bec6-7ced8d4a3506",
-    "key": "P-114758-PVL_I",
+    "_id": "30da549c-fe3e-f111-bec6-7ced8d4a3175",
+    "key": "P-114758-BBG_II",
     "speichertyp": "B6RO0 -001 | RR XL | HP-PH",
     "pnummer": "P-114758",
-    "wbsType": "PVL_I",
-    "muster": "C1.0",
-    "penthouse": "D-HP",
-    "bauphase": "PVL3.1/VS0 &VS1",
+    "wbsType": "BBG_II",
+    "muster": "B2.0",
+    "penthouse": "C2-HP",
+    "bauphase": "BBG2.1",
+    "monatjahr": "Aug-27"
+  },
+  {
+    "_id": "2fda549c-fe3e-f111-bec6-7ced8d4a3175",
+    "key": "P-114758-VS1_I",
+    "speichertyp": "B6RO0 -002 | RR XL | HP-PH",
+    "pnummer": "P-114758",
+    "wbsType": "VS1_I",
+    "muster": "D1.2",
+    "penthouse": "D-HP Cost Down",
+    "bauphase": "VS4.2",
     "monatjahr": "Aug-27"
   }
 ]

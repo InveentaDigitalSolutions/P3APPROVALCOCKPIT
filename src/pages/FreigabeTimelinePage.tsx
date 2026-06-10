@@ -10,6 +10,7 @@ import type { VerbundTicket } from '../data/verbundfreigaben';
 import { useEntanglements } from '../data/entanglements';
 import { useWmm, WMM_STATUS_LABEL } from '../data/wmm';
 import type { WmmRecord, WmmStatus, Sachnummer } from '../data/wmm';
+import { useApprovalMoves } from '../data/approvalMoves';
 import {
     getISOWeek,
     getISOWeekYear,
@@ -255,6 +256,53 @@ function extractSeTermin(name: string): string | null {
     return null;
 }
 
+/** Strip a leading BRV prefix from an iLevel name, leaving the SE_TERMIN-Reife I-Stufe key:
+ *  "NA05-26-07-510" → "26-07-510"; "G065-27-03-470" → "27-03-470"; "26-07-510" → "26-07-510".
+ *  BRV is intentionally irrelevant here — same I-Stufe across BRVs collapses to one key.
+ */
+function stripBrv(name: string): string | null {
+    const parts = name.split('-');
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (/^\d{2}$/.test(parts[i]) && /^\d{2}$/.test(parts[i + 1])) {
+            return parts.slice(i).join('-');
+        }
+    }
+    return null;
+}
+
+/* ── Softwarestand ladder (Dataverse `cr9b2_softwarestand`):
+   ATS-8 … ATS-1, ATS, ATS+1 … ATS+7, SAB, SAB+1 … SAB+8 — 25 ordered steps.
+   The order is intrinsic to the labels (ATS family, then SAB = ATS+8), so we
+   derive it rather than carry a sort column. Moving a planned approval by N
+   weeks shifts its Softwarestand N steps along this ladder. */
+function softwarestandLadderIndex(label: string | null | undefined): number | null {
+    if (!label) return null;
+    const m = label.trim().toUpperCase().replace(/\s*WEEK$/, '').match(/^(ATS|SAB)([+-]\d+)?$/);
+    if (!m) return null;
+    const base = m[1] === 'ATS' ? 8 : 16; // SAB sits at ATS+8
+    return base + (m[2] ? parseInt(m[2], 10) : 0);
+}
+function softwarestandFromLadderIndex(i: number): string {
+    const j = Math.max(0, Math.min(24, i));
+    if (j <= 15) { const n = j - 8; return n === 0 ? 'ATS' : `ATS${n > 0 ? '+' : ''}${n}`; }
+    const n = j - 16; return n === 0 ? 'SAB' : `SAB+${n}`;
+}
+/** Shift a Softwarestand label by `weekDelta` weeks along the ladder. Unknown labels pass through, empty stays empty. */
+function shiftSoftwarestand(label: string | null | undefined, weekDelta: number): string | null {
+    const i = softwarestandLadderIndex(label);
+    if (i == null) return label ?? null;
+    return softwarestandFromLadderIndex(i + weekDelta);
+}
+/** Whole-week delta between two "YYYY-WW" keys (handles year boundaries via the ISO Monday). */
+function yearWeekDelta(fromYw: string, toYw: string): number {
+    const a = fromYw.match(/^(\d{4})-(\d{1,2})$/);
+    const b = toYw.match(/^(\d{4})-(\d{1,2})$/);
+    if (!a || !b) return 0;
+    const ma = getMonday(Number(a[2]), Number(a[1])).getTime();
+    const mb = getMonday(Number(b[2]), Number(b[1])).getTime();
+    return Math.round((mb - ma) / (7 * 24 * 60 * 60 * 1000));
+}
+
 function ticketColor(name: string): string {
     const cat = name.toUpperCase();
     // Level suffix match ("420 HV-L2" → "L2", "L2_HV" → "L2")
@@ -367,9 +415,10 @@ const PenthouseTicketBadge: React.FC<{
                 className={`ftl-ticket-badge${isActive ? ' ftl-ticket-badge--active' : ''}`}
                 style={{ backgroundColor: ticketColor(ticket.name) }}
                 onClick={e => { e.stopPropagation(); isActive ? onClose() : onOpen(ticket); }}
-                title={`${ticket.jiraKey} · ${ticket.name}`}
+                title={`${ticket.jiraKey} · ${ticket.name}${ticket.softwarestand ? ` · ${ticket.softwarestand}` : ''}`}
             >
                 {ticket.name || '?'}
+                {ticket.softwarestand && <span className="ftl-ticket-badge__sw">{ticket.softwarestand}</span>}
             </button>
             {isActive && <TicketPopoverContent selection={{ kind: 'penthouse', ticket }} onClose={onClose} placement={placement} />}
         </span>
@@ -410,6 +459,10 @@ const PenthouseDrawerFields: React.FC<{ ticket: PenthouseTicket }> = ({ ticket }
         <div className="ftl-drawer__row">
             <span className="ftl-drawer__label">Kalenderwoche</span>
             <span className="ftl-drawer__value">{ticket.yearWeek || '—'}</span>
+        </div>
+        <div className="ftl-drawer__row">
+            <span className="ftl-drawer__label">Softwarestand</span>
+            <span className="ftl-drawer__value">{ticket.softwarestand || '—'}</span>
         </div>
         {ticket.parentJiraIssue && (
             <div className="ftl-drawer__row">
@@ -821,6 +874,89 @@ const FilterPanel: React.FC<{
 };
 
 /* ══════════════════════════════════════════════════════
+   Move-target picker — pick which KW a planned approval moves to
+   ══════════════════════════════════════════════════════ */
+
+const MoveTargetPicker: React.FC<{
+    /** Current ISO week of the item (e.g. "2026-20") */
+    currentYearWeek: string;
+    /** Current Softwarestand of the item (e.g. "ATS") — constrains how far it can shift, and previews the new value */
+    currentOffset: string | null;
+    onPick: (yearWeek: string) => void;
+    onClose: () => void;
+}> = ({ currentYearWeek, currentOffset, onPick, onClose }) => {
+    const ref = useRef<HTMLDivElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
+        const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('mousedown', h);
+        document.addEventListener('keydown', k);
+        return () => { document.removeEventListener('mousedown', h); document.removeEventListener('keydown', k); };
+    }, [onClose]);
+    useEffect(() => {
+        const el = listRef.current?.querySelector('[data-current="1"]') as HTMLElement | null;
+        el?.scrollIntoView({ block: 'center' });
+    }, []);
+    // Only weeks the approval can actually be re-planned to: shifting must keep
+    // the Softwarestand inside the ladder (ATS-8 … SAB+8). No Softwarestand → ±26 weeks.
+    const baseIdx = softwarestandLadderIndex(currentOffset);
+    const weeks = useMemo<KalenderwocheInfo[]>(() => {
+        const m = currentYearWeek.match(/^(\d{4})-(\d{1,2})$/);
+        if (!m) return [];
+        const base = getMonday(Number(m[2]), Number(m[1]));
+        const lo = baseIdx == null ? -26 : -baseIdx;
+        const hi = baseIdx == null ? 26 : 24 - baseIdx;
+        const out: KalenderwocheInfo[] = [];
+        for (let d = lo; d <= hi; d++) {
+            const dt = new Date(base);
+            dt.setUTCDate(base.getUTCDate() + d * 7);
+            out.push(getKWInfo(getISOWeek(dt), getISOWeekYear(dt)));
+        }
+        return out;
+    }, [currentYearWeek, baseIdx]);
+    const monthLabel = (d: Date) => d.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    const shortDate = (d: Date) => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.`;
+    return (
+        <div ref={ref} className="ftl-move-picker" onClick={e => e.stopPropagation()}>
+            <div className="ftl-move-picker__head">
+                <div>
+                    <span className="ftl-move-picker__title">Verschieben nach KW</span>
+                    {currentOffset && <span className="ftl-move-picker__sub">Softwarestand jetzt {currentOffset}</span>}
+                </div>
+                <button type="button" className="ftl-move-picker__close" onClick={onClose} aria-label="Schließen">×</button>
+            </div>
+            <div ref={listRef} className="ftl-move-picker__list">
+                {weeks.map((w, i) => {
+                    const yw = kwToYearWeek(w);
+                    const isCurrent = yw === currentYearWeek;
+                    const showMonth = i === 0
+                        || w.startDate.getMonth() !== weeks[i - 1].startDate.getMonth()
+                        || w.startDate.getFullYear() !== weeks[i - 1].startDate.getFullYear();
+                    const shiftedSw = currentOffset ? shiftSoftwarestand(currentOffset, yearWeekDelta(currentYearWeek, yw)) : null;
+                    return (
+                        <React.Fragment key={yw}>
+                            {showMonth && <div className="ftl-move-picker__month">{monthLabel(w.startDate)}</div>}
+                            <button type="button"
+                                data-current={isCurrent ? '1' : undefined}
+                                className={`ftl-move-picker__week${isCurrent ? ' ftl-move-picker__week--current' : ''}`}
+                                disabled={isCurrent}
+                                onClick={() => onPick(yw)}>
+                                <span className="ftl-move-picker__kw">KW{String(w.week).padStart(2, '0')}</span>
+                                <span className="ftl-move-picker__dates">{shortDate(w.startDate)}–{shortDate(w.endDate)}</span>
+                                {isCurrent
+                                    ? <span className="ftl-move-picker__now">aktuell</span>
+                                    : shiftedSw && <span className="ftl-move-picker__sw" title={`Softwarestand wird ${shiftedSw}`}>{shiftedSw}</span>}
+                            </button>
+                        </React.Fragment>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+/* ══════════════════════════════════════════════════════
    Main Component
    ══════════════════════════════════════════════════════ */
 
@@ -1027,6 +1163,30 @@ export const FreigabeTimelinePage: React.FC = () => {
     /* ── WMM (simulated) ── */
     const wmm = useWmm();
     const [wmmOpenKey, setWmmOpenKey] = useState<string | null>(null);
+
+    /* ── Planned-approval moves (re-plan one I-Stufe of a ticket to another KW) ── */
+    const { moves, addMove, removeMove } = useApprovalMoves();
+    const [movePickerFor, setMovePickerFor] = useState<string | null>(null);
+    const ticketByJiraKey = useMemo(() => {
+        const map = new Map<string, PenthouseTicket>();
+        for (const t of PENTHOUSE_TICKETS) if (!map.has(t.jiraKey)) map.set(t.jiraKey, t);
+        return map;
+    }, []);
+    const movedOutKeys = useMemo(() => {
+        // `${sourceJiraKey}|${movedIstufe}` for every active move — suppress at origin
+        const set = new Set<string>();
+        for (const m of moves) if (m.active) set.add(`${m.sourceJiraKey}|${m.movedIstufe}`);
+        return set;
+    }, [moves]);
+    const movesByTargetWeek = useMemo(() => {
+        const map = new Map<string, typeof moves>();
+        for (const m of moves) {
+            if (!m.active) continue;
+            const list = map.get(m.toYearWeek);
+            if (list) list.push(m); else map.set(m.toYearWeek, [m]);
+        }
+        return map;
+    }, [moves]);
     const currentEntanglement = useMemo(
         () => (effectiveSelected ? findByIstufe(effectiveSelected) : undefined),
         [effectiveSelected, findByIstufe],
@@ -1072,42 +1232,9 @@ export const FreigabeTimelinePage: React.FC = () => {
     const [istufeRank, setIstufeRank] = useState<Record<string, number>>({});
     const [istufeLeads, setIstufeLeads] = useState<Record<string, boolean>>({});
 
-    /** Get effective rank for an I-Stufe in a week (fallback = position index + 1) */
-    function getEffectiveRank(weekKey: string, istufe: string, activeInWeek: IStufeMaster[]): number {
-        const stored = istufeRank[`${weekKey}|${istufe}`];
-        if (stored != null) return stored;
-        return activeInWeek.findIndex(m => m.istufe === istufe) + 1;
-    }
-
     /** Get the rank for display in the dropdown */
     function getRank(weekKey: string, istufe: string, fallbackIdx: number): number {
         return istufeRank[`${weekKey}|${istufe}`] ?? (fallbackIdx + 1);
-    }
-
-    /** Get all I-Stufe keys in the same rank group for a specific week */
-    function getRankGroupMembers(weekKey: string, istufe: string, activeInWeek: IStufeMaster[]): string[] {
-        const rank = getEffectiveRank(weekKey, istufe, activeInWeek);
-        return activeInWeek
-            .filter(m => getEffectiveRank(weekKey, m.istufe, activeInWeek) === rank)
-            .map(m => m.istufe);
-    }
-
-    /** Check if an I-Stufe is in a shared rank group */
-    function isInGroup(weekKey: string, istufe: string, activeInWeek: IStufeMaster[]): boolean {
-        return getRankGroupMembers(weekKey, istufe, activeInWeek).length > 1;
-    }
-
-    /** Check if an I-Stufe is editable in a specific week */
-    function isEditableInWeek(weekKey: string, istufe: string, activeInWeek: IStufeMaster[]): boolean {
-        if (!isInGroup(weekKey, istufe, activeInWeek)) return true;
-        return !!istufeLeads[`${weekKey}|${istufe}`];
-    }
-
-    /** Check if a group needs a Lead in a specific week */
-    function groupNeedsLeadInWeek(weekKey: string, istufe: string, activeInWeek: IStufeMaster[]): boolean {
-        if (!isInGroup(weekKey, istufe, activeInWeek)) return false;
-        const members = getRankGroupMembers(weekKey, istufe, activeInWeek);
-        return !members.some(k => istufeLeads[`${weekKey}|${k}`]);
     }
 
     const handleRankChange = useCallback((weekKey: string, istufe: string, rank: number) => {
@@ -1133,38 +1260,12 @@ export const FreigabeTimelinePage: React.FC = () => {
         });
     }, [istufeRank]);
 
-    /* ── Ist-Stand state ── */
+    /* ── Ist-Stand state ──
+       Records the actually-reached approval level per planned-approval item.
+       Keys: ticket-driven items use "${ticketId}|${istufe}|${hvsKey}";
+             manual items use "manual|${istufe}|${offset}|${weekKey}|${hvsKey}". */
     const [istStand, setIstStand] = useState<Record<string, string>>({});
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-
-    /**
-     * Cascading approval:
-     * - Patches all non-lead members of the same rank group in this week
-     */
-    const handleIstChange = useCallback((istufeKey: string, weekKey: string, hvsKey: string, value: string) => {
-        const wkIdx = weekToIndex(weekKey);
-        const activeInWeek = activeIStufen.filter(m => {
-            return weekToIndex(m.atsWeek) <= wkIdx && wkIdx <= weekToIndex(m.sabWeek);
-        });
-
-        // Compute group members inline using same logic
-        const rank = istufeRank[`${weekKey}|${istufeKey}`] ?? (activeInWeek.findIndex(m => m.istufe === istufeKey) + 1);
-        const groupMembers = activeInWeek
-            .filter(m => (istufeRank[`${weekKey}|${m.istufe}`] ?? (activeInWeek.findIndex(x => x.istufe === m.istufe) + 1)) === rank)
-            .map(m => m.istufe);
-
-        setIstStand(prev => {
-            const next = { ...prev };
-            next[`${istufeKey}|${weekKey}|${hvsKey}`] = value;
-            for (const member of groupMembers) {
-                if (member !== istufeKey) {
-                    next[`${member}|${weekKey}|${hvsKey}`] = value;
-                }
-            }
-            return next;
-        });
-        setOpenDropdown(null);
-    }, [activeIStufen, istufeRank]);
 
     /* ── Manual entries helper functions ── */
     const [addPickerOpen, setAddPickerOpen] = useState<string | null>(null);
@@ -1196,11 +1297,6 @@ export const FreigabeTimelinePage: React.FC = () => {
         }
         return map;
     }, []);
-
-    /* ── Jira ticket ID ── */
-    function jiraId(istufe: string, pth: string, level: string): string {
-        return `${istufe}_${pth || '—'}_${level}`;
-    }
 
     /* ── Bulk Edit state ── */
     const [bulkLevel, setBulkLevel] = useState<string>('');
@@ -1925,46 +2021,62 @@ export const FreigabeTimelinePage: React.FC = () => {
                             const isNow = w.week === currentWeek && w.year === currentYear;
                             const cdhHits = cdhByWeekAndKey.get(`${yw}|${hvs.key}`) ?? [];
 
-                            // Auto-active I-Stufen in this week
-                            const autoActive = activeIStufen.filter(m => {
-                                const idx = weekToIndex(yw);
-                                return weekToIndex(m.atsWeek) <= idx && idx <= weekToIndex(m.sabWeek);
-                            });
-
                             // Manual entries for this cell
                             const cellManual = getManualEntriesForCell(yw, hvs.key);
 
-                            // Build unified rows grouped by Softwarestand
-                            // Each row: { istufe, autoOffset, manualOffsets[], isAutoActive }
-                            const rowMap = new Map<string, { istufe: string; autoOffset: string | null; manualOffsets: { offset: string; key: string }[]; isAutoActive: boolean }>();
-
-                            // Add auto-active entries (filtered by lead/group logic)
-                            for (const m of autoActive) {
-                                if (isInGroup(yw, m.istufe, autoActive) && !groupNeedsLeadInWeek(yw, m.istufe, autoActive) && !istufeLeads[`${yw}|${m.istufe}`]) continue;
-                                rowMap.set(m.istufe, {
-                                    istufe: m.istufe,
-                                    autoOffset: getOffsetForWeek(m, yw),
-                                    manualOffsets: [],
-                                    isAutoActive: true,
-                                });
-                            }
-
-                            // Add manual entries — merge into existing rows or create new
-                            for (const me of cellManual) {
-                                const meKey = `manual|${me.istufe}|${me.offset}|${yw}|${hvs.key}`;
-                                if (rowMap.has(me.istufe)) {
-                                    rowMap.get(me.istufe)!.manualOffsets.push({ offset: me.offset, key: meKey });
-                                } else {
-                                    rowMap.set(me.istufe, {
-                                        istufe: me.istufe,
-                                        autoOffset: null,
-                                        manualOffsets: [{ offset: me.offset, key: meKey }],
-                                        isAutoActive: false,
+                            // Planned approvals for this cell. Source = Jira-synced Penthouse
+                            // tickets due this week (one row per BRV-stripped I-Stufe), MINUS
+                            // I-Stufen re-planned to another KW, PLUS I-Stufen re-planned into this one.
+                            type CellItem = {
+                                cellKey: string;
+                                istufe: string;
+                                offset: string | null;
+                                level: string;
+                                kind: 'ticket' | 'moved' | 'manual';
+                                jiraKey: string | null;
+                                movedFrom: string | null;
+                                originOffset: string | null;
+                                moveId: string | null;
+                            };
+                            const items: CellItem[] = [];
+                            for (const t of (TICKETS_BY_YEARWEEK.get(yw) ?? [])) {
+                                if (!isTicketVisible(t.iLevelNames)) continue;
+                                const seen = new Set<string>();
+                                for (const name of t.iLevelNames) {
+                                    const ik = stripBrv(name);
+                                    if (!ik || seen.has(ik)) continue;
+                                    seen.add(ik);
+                                    if (!isIstufeVisible(ik)) continue;
+                                    if (movedOutKeys.has(`${t.jiraKey}|${ik}`)) continue;
+                                    items.push({
+                                        cellKey: `${t.id}|${ik}|${hvs.key}`,
+                                        istufe: ik, offset: t.softwarestand || null, level: t.name,
+                                        kind: 'ticket', jiraKey: t.jiraKey, movedFrom: null, originOffset: null, moveId: null,
                                     });
                                 }
                             }
-
-                            const rows = [...rowMap.values()];
+                            for (const mv of (movesByTargetWeek.get(yw) ?? [])) {
+                                const src = ticketByJiraKey.get(mv.sourceJiraKey);
+                                if (!src) continue;
+                                if (!isTicketVisible(src.iLevelNames)) continue;
+                                if (!isIstufeVisible(mv.movedIstufe)) continue;
+                                // Shift the Softwarestand by however many weeks the approval moved.
+                                const shifted = shiftSoftwarestand(src.softwarestand, yearWeekDelta(src.yearWeek, mv.toYearWeek));
+                                items.push({
+                                    cellKey: `move|${mv.id}|${hvs.key}`,
+                                    istufe: mv.movedIstufe, offset: shifted, level: src.name,
+                                    kind: 'moved', jiraKey: src.jiraKey, movedFrom: src.yearWeek,
+                                    originOffset: src.softwarestand || null, moveId: mv.id,
+                                });
+                            }
+                            for (const me of cellManual) {
+                                if (!isIstufeVisible(me.istufe)) continue;
+                                items.push({
+                                    cellKey: `manual|${me.istufe}|${me.offset}|${yw}|${hvs.key}`,
+                                    istufe: me.istufe, offset: me.offset || null, level: '',
+                                    kind: 'manual', jiraKey: null, movedFrom: null, originOffset: null, moveId: null,
+                                });
+                            }
 
                             return (
                                 <div key={w.key} className={`ftl-gantt__cell${isNow ? ' ftl-gantt__cell--current' : ''}`}>
@@ -1978,66 +2090,85 @@ export const FreigabeTimelinePage: React.FC = () => {
                                         </div>
                                     ))}
 
-                                    {/* Unified rows per Softwarestand */}
-                                    {rows.filter(row => isIstufeVisible(row.istufe)).map(row => {
-                                        const c = istufeColors.get(row.istufe) ?? ISTUFE_PALETTE[0];
-                                        const isSelected = effectiveSelected === row.istufe;
-                                        const isDimmed = effectiveSelected !== null && !isSelected;
-                                        const canEdit = isActive && isSelected && (row.isAutoActive ? isEditableInWeek(yw, row.istufe, autoActive) : true);
-                                        const needsLead = isSelected && row.isAutoActive && groupNeedsLeadInWeek(yw, row.istufe, autoActive);
-
-                                        // Render function for a single offset badge
-                                        const renderBadge = (cellKey: string, offset: string, isManual: boolean) => {
-                                            const istVal = istStand[cellKey] ?? '';
-                                            return (
-                                                <div key={cellKey} className="ftl-gantt__cell-badge-group">
-                                                    <span className="ftl-gantt__cell-offset" style={{ backgroundColor: c.bar, color: c.text }}>
-                                                        {offset}
-                                                    </span>
-                                                    {canEdit ? (
-                                                        <span
-                                                            className={`ftl-gantt__badge ftl-gantt__badge--clickable${istVal ? '' : ' ftl-gantt__badge--empty'}`}
-                                                            style={istVal ? { backgroundColor: lvlColor(istVal).bg, color: lvlColor(istVal).text } : undefined}
-                                                            onClick={e => { e.stopPropagation(); setOpenDropdown(openDropdown === cellKey ? null : cellKey); }}>
-                                                            {istVal || '—'}
-                                                            <span className="ftl-gantt__badge-caret">▾</span>
-                                                        </span>
-                                                    ) : needsLead ? (
-                                                        <span className="ftl-gantt__badge ftl-gantt__badge--needs-lead">Lead wählen</span>
-                                                    ) : (
-                                                        <span className={`ftl-gantt__badge${istVal ? '' : ' ftl-gantt__badge--empty ftl-gantt__badge--readonly'}`}
-                                                            style={istVal ? { backgroundColor: lvlColor(istVal).bg, color: lvlColor(istVal).text } : undefined}>
-                                                            {istVal || '—'}
-                                                        </span>
-                                                    )}
-                                                    {openDropdown === cellKey && (
-                                                        <IstDropdown current={istVal}
-                                                            onSelect={v => {
-                                                                if (isManual) { setIstStand(prev => ({ ...prev, [cellKey]: v })); setOpenDropdown(null); }
-                                                                else handleIstChange(row.istufe, yw, hvs.key, v);
-                                                            }}
-                                                            onClose={() => setOpenDropdown(null)} />
-                                                    )}
-                                                    {isManual && (
-                                                        <button className="ftl-gantt__remove-btn"
-                                                            onClick={() => { const parts = cellKey.split('|'); removeManualEntry(yw, hvs.key, parts[1], parts[2]); }}
-                                                            title="Entfernen">×</button>
-                                                    )}
-                                                    {istVal && (
-                                                        <span className="ftl-gantt__ref ftl-gantt__ref--jira">{jiraId(row.istufe, hvs.penthouse, istVal)}</span>
-                                                    )}
-                                                </div>
-                                            );
-                                        };
-
+                                    {/* Planned-approval rows — Penthouse tickets, ± re-planned moves */}
+                                    {items.map(item => {
+                                        const c = colorForSeTermin(seTerminFor(item.istufe)) ?? ISTUFE_PALETTE[0];
+                                        const canEdit = isActive;
+                                        const istVal = istStand[item.cellKey] ?? '';
+                                        const movedKw = item.movedFrom ? (item.movedFrom.split('-')[1] ?? item.movedFrom) : '';
+                                        const movable = canEdit && !!item.jiraKey && (item.kind === 'ticket' || item.kind === 'moved');
+                                        const chipTitle = `${item.offset ? `${item.istufe} · ${item.offset}` : item.istufe}${movable ? ' — klicken zum Verschieben' : ''}`;
+                                        const chipInner = (
+                                            <>
+                                                {item.istufe}
+                                                {item.offset && <span className="ftl-gantt__cell-offset-reife">{item.offset}</span>}
+                                            </>
+                                        );
                                         return (
-                                            <div key={row.istufe}
-                                                className={`ftl-gantt__cell-row${isDimmed ? ' ftl-gantt__cell-row--dimmed' : ''}${isSelected ? ' ftl-gantt__cell-row--selected' : ''}${!row.isAutoActive ? ' ftl-gantt__cell-row--manual' : ''}`}
+                                            <div key={item.cellKey}
+                                                className={`ftl-gantt__cell-row${item.kind === 'manual' ? ' ftl-gantt__cell-row--manual' : ''}${item.kind === 'moved' ? ' ftl-gantt__cell-row--moved' : ''}`}
                                                 style={{ borderLeftColor: c.bar }}>
-                                                {/* Auto offset */}
-                                                {row.autoOffset && renderBadge(`${row.istufe}|${yw}|${hvs.key}`, row.autoOffset, false)}
-                                                {/* Manual offsets (same row) */}
-                                                {row.manualOffsets.map(mo => renderBadge(mo.key, mo.offset, true))}
+                                                {movable ? (
+                                                    <button type="button"
+                                                        className={`ftl-gantt__cell-offset ftl-gantt__cell-offset--btn${movePickerFor === item.cellKey ? ' ftl-gantt__cell-offset--open' : ''}`}
+                                                        style={{ backgroundColor: c.bar, color: c.text }} title={chipTitle}
+                                                        onClick={e => { e.stopPropagation(); setMovePickerFor(movePickerFor === item.cellKey ? null : item.cellKey); }}>
+                                                        {chipInner}
+                                                    </button>
+                                                ) : (
+                                                    <span className="ftl-gantt__cell-offset" style={{ backgroundColor: c.bar, color: c.text }} title={chipTitle}>
+                                                        {chipInner}
+                                                    </span>
+                                                )}
+                                                {item.level && (
+                                                    <span className="ftl-gantt__badge ftl-gantt__badge--sm"
+                                                        style={{ backgroundColor: ticketColor(item.level), color: '#fff' }}
+                                                        title={`Geplante Freigabe (Soll)${item.jiraKey ? ` · ${item.jiraKey}` : ''}`}>
+                                                        {item.level}
+                                                    </span>
+                                                )}
+                                                {item.kind === 'moved' && movedKw && (
+                                                    <span className="ftl-gantt__cell-moved-from"
+                                                        title={`Verschoben aus ${item.movedFrom}${item.originOffset ? ` (war ${item.originOffset})` : ''}`}>↪ KW{movedKw}</span>
+                                                )}
+                                                {canEdit ? (
+                                                    <span
+                                                        className={`ftl-gantt__badge ftl-gantt__badge--clickable${istVal ? '' : ' ftl-gantt__badge--empty'}`}
+                                                        style={istVal ? { backgroundColor: lvlColor(istVal).bg, color: lvlColor(istVal).text } : undefined}
+                                                        onClick={e => { e.stopPropagation(); setOpenDropdown(openDropdown === item.cellKey ? null : item.cellKey); }}>
+                                                        {istVal || '—'}
+                                                        <span className="ftl-gantt__badge-caret">▾</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className={`ftl-gantt__badge${istVal ? '' : ' ftl-gantt__badge--empty ftl-gantt__badge--readonly'}`}
+                                                        style={istVal ? { backgroundColor: lvlColor(istVal).bg, color: lvlColor(istVal).text } : undefined}>
+                                                        {istVal || '—'}
+                                                    </span>
+                                                )}
+                                                {openDropdown === item.cellKey && (
+                                                    <IstDropdown current={istVal}
+                                                        onSelect={v => { setIstStand(prev => ({ ...prev, [item.cellKey]: v })); setOpenDropdown(null); }}
+                                                        onClose={() => setOpenDropdown(null)} />
+                                                )}
+                                                {/* Undo a move */}
+                                                {canEdit && item.kind === 'moved' && item.moveId && (
+                                                    <button type="button" className="ftl-gantt__remove-btn" title="Verschiebung rückgängig"
+                                                        onClick={() => removeMove(item.moveId!)}>↩</button>
+                                                )}
+                                                {/* Remove a manual entry */}
+                                                {item.kind === 'manual' && (
+                                                    <button className="ftl-gantt__remove-btn"
+                                                        onClick={() => { const parts = item.cellKey.split('|'); removeManualEntry(yw, hvs.key, parts[1], parts[2]); }}
+                                                        title="Entfernen">×</button>
+                                                )}
+                                                {/* Move-target picker — anchored to this row, opened by the I-Stufe chip */}
+                                                {movable && movePickerFor === item.cellKey && (
+                                                    <MoveTargetPicker
+                                                        currentYearWeek={yw}
+                                                        currentOffset={item.offset}
+                                                        onPick={ny => { addMove(item.jiraKey!, item.istufe, ny); setMovePickerFor(null); }}
+                                                        onClose={() => setMovePickerFor(null)} />
+                                                )}
                                             </div>
                                         );
                                     })}
@@ -2061,7 +2192,7 @@ export const FreigabeTimelinePage: React.FC = () => {
                                         </div>
                                     )}
 
-                                    {rows.length === 0 && cdhHits.length === 0 && (
+                                    {items.length === 0 && cdhHits.length === 0 && (
                                         <span className="ftl-gantt__cell-empty">—</span>
                                     )}
                                 </div>
