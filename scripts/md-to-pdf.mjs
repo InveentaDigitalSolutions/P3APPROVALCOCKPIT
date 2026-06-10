@@ -1,4 +1,4 @@
-// Markdown -> styled, print-ready HTML for the Lastenheft.
+// Markdown -> styled, print-ready HTML for the Projektdokumentation.
 // Produces a cover page + table of contents + numbered body.
 // Constructs handled: headings, GFM pipe tables, bold, inline code,
 // blockquotes, ordered/unordered (nested) lists, horizontal rules, links.
@@ -15,7 +15,7 @@ if (!inFile || !outHtml) {
 // ── document metadata (cover) ──────────────────────────────────────────
 const META = {
     kicker: 'P3 Group · HVS Software-Freigabe',
-    docType: 'Lastenheft',
+    docType: 'Projektdokumentation',
     title: 'Freigabencockpit Next',
     subtitle: 'Anforderungsspezifikation — HVS Software-Freigabe-Cockpit',
     version: '1.0',

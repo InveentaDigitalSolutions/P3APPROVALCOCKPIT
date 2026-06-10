@@ -1,10 +1,10 @@
-# Lastenheft — Freigabencockpit Next
+# Projektdokumentation — Freigabencockpit Next
 
 **Dokumentinformationen**
 
 | Feld | Wert |
 |---|---|
-| Dokumenttyp | Lastenheft (Anforderungsspezifikation) |
+| Dokumenttyp | Projektdokumentation (Anforderungsspezifikation) |
 | Projekt | Freigabencockpit Next — HVS Software-Freigabe-Cockpit (P3 Group) |
 | Anwendung | Microsoft Power Apps Code App (React, TypeScript) |
 | Plattform / Datenhaltung | Microsoft Dataverse |
@@ -44,7 +44,7 @@ vorzeigbares Werkzeug **und** einen belastbaren Bauplan für den Weg zum Produkt
 - **Integrierte Qualitätssicherung:** WMM-Prüfung mit Delta-Erkennung (geänderte, neue und entfallene
   Sachnummern) direkt in der Oberfläche.
 
-**Was darüber hinaus vollständig spezifiziert ist:** Dieses Lastenheft dokumentiert das gesamte Zielbild —
+**Was darüber hinaus vollständig spezifiziert ist:** Diese Projektdokumentation dokumentiert das gesamte Zielbild —
 Datenmodell (ER-Diagramm, Abb. 1), Quell-/Zielsystem-Landschaft (Prozessskizze, Abb. 2), den **bewerteten
 Kundenanforderungskatalog** sowie das **Epic-/Feature-Backlog (E0–E7)**. Die Lösung ist damit nicht nur
 gebaut, sondern auch nachvollziehbar dokumentiert und planbar erweiterbar.

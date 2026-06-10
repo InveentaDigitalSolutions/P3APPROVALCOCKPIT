@@ -1,12 +1,12 @@
-# Lastenheft-Builder — Playbook & Agenten-Leitfaden
+# Projektdokumentation-Builder — Playbook & Agenten-Leitfaden
 
-> **Zweck:** Wiederverwendbare Anleitung, um für **beliebige künftige Projekte** ein Lastenheft in derselben
+> **Zweck:** Wiederverwendbare Anleitung, um für **beliebige künftige Projekte** eine Projektdokumentation in derselben
 > Qualität, Struktur und im selben P3-Branding zu erstellen wie das Referenz-Dokument
-> [`LASTENHEFT.md`](LASTENHEFT.md) (Projekt „FreigabecockpitNEXT"). Dieses Playbook kann direkt als
-> Agenten-Instruktion verwendet werden (z. B. unter `.claude/agents/lastenheft-builder.md`) oder als
+> [`PROJEKTDOKUMENTATION.md`](PROJEKTDOKUMENTATION.md) (Projekt „FreigabecockpitNEXT"). Dieses Playbook kann direkt als
+> Agenten-Instruktion verwendet werden (z. B. unter `.claude/agents/projektdokumentation-builder.md`) oder als
 > Onboarding-Dokument für Berater.
 >
-> **Referenzbeispiel:** `docs/LASTENHEFT.md` + erzeugte Artefakte `LASTENHEFT.pdf` / `LASTENHEFT.docx`,
+> **Referenzbeispiel:** `docs/PROJEKTDOKUMENTATION.md` + erzeugte Artefakte `PROJEKTDOKUMENTATION.pdf` / `PROJEKTDOKUMENTATION.docx`,
 > Diagramme `erd.svg` / `context.svg`, Toolchain in `../scripts/`, Build-Anleitung in
 > [`README.md`](README.md).
 
@@ -15,7 +15,7 @@
 ## 1. Mission
 
 Aus den verfügbaren Projektquellen (Code, Datenmodell, Kundendokumente, Gesprächsnotizen) ein **vollständiges,
-beschreibendes, professionell gestaltetes Lastenheft** erzeugen, das
+beschreibendes, professionell gestaltetes Projektdokumentation** erzeugen, das
 
 1. den **Ist-Stand** der Lösung präzise dokumentiert (was existiert, wie es funktioniert),
 2. das **Zielbild** des Kunden vollständig abbildet (Quell-/Zielsysteme, Funktionssäulen, Backlog),
@@ -77,7 +77,7 @@ Schnittstellen**. Letzteres klar als nicht-app-bedingt ausweisen.
 
 ## 5. Dokumentstruktur (Vorlage)
 
-Reihenfolge wie im Referenz-Lastenheft. Abschnitte projektneutral anpassen; Nummerierung von §1 an
+Reihenfolge wie im Referenz-Projektdokumentation. Abschnitte projektneutral anpassen; Nummerierung von §1 an
 beibehalten, „Executive Summary" unnummeriert voranstellen.
 
 1. **Deckblatt** (dunkel, Marke) — Dokumenttyp, Titel, Untertitel, Version, Datum, Status, Klassifizierung,
@@ -179,17 +179,17 @@ qlmanage -t -s 2200 -o docs docs/erd.svg && mv docs/erd.svg.png docs/erd.png
 qlmanage -t -s 2200 -o docs docs/context.svg && mv docs/context.svg.png docs/context.png
 
 # 2) PDF (gebrandet)
-node scripts/md-to-pdf.mjs docs/LASTENHEFT.md docs/LASTENHEFT.html
-node scripts/print-pdf.mjs docs/LASTENHEFT.html docs/LASTENHEFT.pdf
+node scripts/md-to-pdf.mjs docs/PROJEKTDOKUMENTATION.md docs/PROJEKTDOKUMENTATION.html
+node scripts/print-pdf.mjs docs/PROJEKTDOKUMENTATION.html docs/PROJEKTDOKUMENTATION.pdf
 
 # 3) DOCX (editierbar, mit eingebetteten Diagrammen)
-node scripts/build-word.mjs docs/LASTENHEFT.md docs/LASTENHEFT.word.html
-cd docs && textutil -convert docx LASTENHEFT.word.html -output _tmp.docx
+node scripts/build-word.mjs docs/PROJEKTDOKUMENTATION.md docs/PROJEKTDOKUMENTATION.word.html
+cd docs && textutil -convert docx PROJEKTDOKUMENTATION.word.html -output _tmp.docx
 rm -rf _docx && mkdir _docx && (cd _docx && unzip -q ../_tmp.docx)
 mkdir -p _docx/word/media && cp erd.png context.png _docx/word/media/
 node ../scripts/embed-images-docx.mjs _docx
-rm -f LASTENHEFT.docx && (cd _docx && zip -q -X -r ../LASTENHEFT.docx '[Content_Types].xml' _rels word docProps && zip -q -r ../LASTENHEFT.docx . -x '[Content_Types].xml')
-rm -rf _docx _tmp.docx LASTENHEFT.word.html
+rm -f PROJEKTDOKUMENTATION.docx && (cd _docx && zip -q -X -r ../PROJEKTDOKUMENTATION.docx '[Content_Types].xml' _rels word docProps && zip -q -r ../PROJEKTDOKUMENTATION.docx . -x '[Content_Types].xml')
+rm -rf _docx _tmp.docx PROJEKTDOKUMENTATION.word.html
 ```
 
 **Voraussetzungen:** Node ≥ 22, Google Chrome (PDF), `textutil` + `qlmanage` (macOS, für DOCX/PNG). Die
@@ -202,7 +202,7 @@ Skripte sind dependency-frei (eigener Markdown-Parser, SVG-Generatoren, DOCX-Bil
 1. **Sammeln** (siehe §3): Repo lesen, Schema/ETL erfassen, Kundendokumente und Aufwände beschaffen.
 2. **Datenmodell rekonstruieren** → `build-erd.mjs` anpassen.
 3. **Systemkontext skizzieren** → `build-context.mjs` anpassen.
-4. **`LASTENHEFT.md` schreiben** entlang der Struktur (§5 dieses Playbooks); Begriffe ins Glossar, Platzhalter
+4. **`PROJEKTDOKUMENTATION.md` schreiben** entlang der Struktur (§5 dieses Playbooks); Begriffe ins Glossar, Platzhalter
    `[[ERD]]`/`[[CONTEXT]]` setzen.
 5. **Kundenkatalog aufnehmen** (§9) — jede Position mit Status + Begründung.
 6. **Executive Summary** zuletzt schreiben (sie fasst alles zusammen) — inkl. Aufwandstabelle.
@@ -230,17 +230,17 @@ Skripte sind dependency-frei (eigener Markdown-Parser, SVG-Generatoren, DOCX-Bil
 
 ```
 docs/
-  LASTENHEFT.md            # Quelle (editieren)
-  LASTENHEFT.pdf           # gebrandetes PDF (generiert)
-  LASTENHEFT.docx          # editierbares Word (generiert)
+  PROJEKTDOKUMENTATION.md            # Quelle (editieren)
+  PROJEKTDOKUMENTATION.pdf           # gebrandetes PDF (generiert)
+  PROJEKTDOKUMENTATION.docx          # editierbares Word (generiert)
   erd.svg / erd.png        # Datenmodell-Diagramm
   context.svg / context.png# Prozess-Skizze
   README.md                # Build-Anleitung
-  LASTENHEFT_PLAYBOOK.md   # dieses Dokument
+  PROJEKTDOKUMENTATION_PLAYBOOK.md   # dieses Dokument
 scripts/
   build-erd.mjs  build-context.mjs
   md-to-pdf.mjs  print-pdf.mjs
   build-word.mjs embed-images-docx.mjs
-.gitignore: docs/LASTENHEFT.html, docs/*.word.html  (regenerierbare Intermediates)
+.gitignore: docs/PROJEKTDOKUMENTATION.html, docs/*.word.html  (regenerierbare Intermediates)
 ```
 </content>

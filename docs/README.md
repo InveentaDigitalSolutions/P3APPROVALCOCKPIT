@@ -1,14 +1,14 @@
-# Lastenheft — Build & Pflege
+# Projektdokumentation — Build & Pflege
 
-Dieses Verzeichnis enthält das **Lastenheft FreigabecockpitNEXT** samt Toolchain. Quelle der Wahrheit ist
-`LASTENHEFT.md`; PDF, DOCX und die Diagramme werden daraus generiert.
+Dieses Verzeichnis enthält die **Projektdokumentation FreigabecockpitNEXT** samt Toolchain. Quelle der Wahrheit ist
+`PROJEKTDOKUMENTATION.md`; PDF, DOCX und die Diagramme werden daraus generiert.
 
 ## Dateien
 | Datei | Rolle |
 |---|---|
-| `LASTENHEFT.md` | **Quelltext** des Lastenhefts — hier wird inhaltlich editiert. |
-| `LASTENHEFT.pdf` | Generiertes, P3-gebrandetes PDF (Deckblatt, TOC, Diagramme, Seitenfuß). |
-| `LASTENHEFT.docx` | Generierte, editierbare Word-Datei (Überschriften als Formatvorlagen, Diagramme eingebettet). |
+| `PROJEKTDOKUMENTATION.md` | **Quelltext** der Projektdokumentation — hier wird inhaltlich editiert. |
+| `PROJEKTDOKUMENTATION.pdf` | Generiertes, P3-gebrandetes PDF (Deckblatt, TOC, Diagramme, Seitenfuß). |
+| `PROJEKTDOKUMENTATION.docx` | Generierte, editierbare Word-Datei (Überschriften als Formatvorlagen, Diagramme eingebettet). |
 | `erd.svg` / `erd.png` | ER-Diagramm (Datenmodell), erzeugt aus `scripts/build-erd.mjs`. |
 | `context.svg` / `context.png` | Prozess-/Systemkontext-Skizze, erzeugt aus `scripts/build-context.mjs`. |
 | `dataflow/` | FGC_DATA Power-Query-Exporte (git-ignoriert, da groß). |
@@ -36,19 +36,19 @@ qlmanage -t -s 2200 -o docs docs/context.svg && mv docs/context.svg.png docs/con
 
 **PDF:**
 ```bash
-node scripts/md-to-pdf.mjs docs/LASTENHEFT.md docs/LASTENHEFT.html
-node scripts/print-pdf.mjs docs/LASTENHEFT.html docs/LASTENHEFT.pdf
+node scripts/md-to-pdf.mjs docs/PROJEKTDOKUMENTATION.md docs/PROJEKTDOKUMENTATION.html
+node scripts/print-pdf.mjs docs/PROJEKTDOKUMENTATION.html docs/PROJEKTDOKUMENTATION.pdf
 ```
 
 **Word (.docx):**
 ```bash
-node scripts/build-word.mjs docs/LASTENHEFT.md docs/LASTENHEFT.word.html
-cd docs && textutil -convert docx LASTENHEFT.word.html -output _tmp.docx
+node scripts/build-word.mjs docs/PROJEKTDOKUMENTATION.md docs/PROJEKTDOKUMENTATION.word.html
+cd docs && textutil -convert docx PROJEKTDOKUMENTATION.word.html -output _tmp.docx
 rm -rf _docx && mkdir _docx && (cd _docx && unzip -q ../_tmp.docx)
 mkdir -p _docx/word/media && cp erd.png context.png _docx/word/media/
 node ../scripts/embed-images-docx.mjs _docx
-rm -f LASTENHEFT.docx && (cd _docx && zip -q -X -r ../LASTENHEFT.docx '[Content_Types].xml' _rels word docProps && zip -q -r ../LASTENHEFT.docx . -x '[Content_Types].xml')
-rm -rf _docx _tmp.docx LASTENHEFT.word.html
+rm -f PROJEKTDOKUMENTATION.docx && (cd _docx && zip -q -X -r ../PROJEKTDOKUMENTATION.docx '[Content_Types].xml' _rels word docProps && zip -q -r ../PROJEKTDOKUMENTATION.docx . -x '[Content_Types].xml')
+rm -rf _docx _tmp.docx PROJEKTDOKUMENTATION.word.html
 ```
 
 ## Branding (P3 FORGE)

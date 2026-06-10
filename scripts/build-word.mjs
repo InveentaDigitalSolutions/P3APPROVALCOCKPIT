@@ -1,4 +1,4 @@
-// Build a Word-friendly HTML from the Lastenheft markdown for textutil -> docx.
+// Build a Word-friendly HTML from the Projektdokumentation markdown for textutil -> docx.
 // Keeps the first H1 as the title, renders tables/lists/headings/code, and emits
 // unique placeholders (@@IMG:erd@@ / @@IMG:context@@) where the diagrams go — these
 // are replaced by embedded PNGs in a post-processing step (embed-images-docx.mjs).

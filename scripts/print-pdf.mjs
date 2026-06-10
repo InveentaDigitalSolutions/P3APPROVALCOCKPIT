@@ -22,7 +22,7 @@ const footer = `
   border-top:1.4px solid #dbff55;">
   <span style="color:#00002d;font-weight:600;">BMW Group &middot; P3 Group</span>
   <span>Seite <span class="pageNumber"></span> von <span class="totalPages"></span></span>
-  <span>Lastenheft &middot; Freigabencockpit Next &middot; v1.0</span>
+  <span>Projektdokumentation &middot; Freigabencockpit Next &middot; v1.0</span>
 </div>`;
 const header = '<div></div>';
 

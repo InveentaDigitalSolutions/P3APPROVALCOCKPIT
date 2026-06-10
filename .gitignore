@@ -31,6 +31,6 @@ docs/dataflow/
 *.sln
 *.sw?
 
-# Lastenheft build intermediates (regenerable from LASTENHEFT.md + scripts/)
-docs/LASTENHEFT.html
+# Projektdokumentation build intermediates (regenerable from PROJEKTDOKUMENTATION.md + scripts/)
+docs/PROJEKTDOKUMENTATION.html
 docs/*.word.html
